@@ -1,8 +1,9 @@
 import { sanitizeDualTheme } from "../shared/themeSanitizer.mjs";
 
 // 当前文件：Vercel OpenAI 兼容主题生成函数的 TypeScript 源文件。
-// 主题生成耗时较长，使用 Node 运行时并设置 Vercel Hobby 计划允许的最大执行时长。
-export const maxDuration = 60;
+export const config = {
+    runtime: 'edge', // Use edge runtime for fetch support
+};
 
 const DEFAULT_OPENAI_CHAT_COMPLETIONS_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_OPENAI_MODEL = 'gpt-4o';

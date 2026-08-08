@@ -39,17 +39,8 @@ export const generateThemeFromLyrics = async (
     });
 
     if (!response.ok) {
-      const rawText = await response.text();
-      let errorMessage = `Theme API error (${response.status})`;
-      try {
-        const errorData = JSON.parse(rawText) as { error?: unknown };
-        if (typeof errorData?.error === 'string' && errorData.error.trim()) {
-          errorMessage = `Theme API error (${response.status}): ${errorData.error}`;
-        }
-      } catch {
-        // 非 JSON 错误体（例如 Vercel 504 的 HTML 页面）没有可用细节，保留状态码信息。
-      }
-      throw new Error(errorMessage);
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to generate theme');
     }
 
     const dualTheme = await response.json();
