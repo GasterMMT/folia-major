@@ -219,6 +219,7 @@ export default {
       "settings-integration": { "title": "Pengaturan integrasi", "description": "Buka pengaturan Stage, Now Playing, dan Navidrome" },
       "settings-discord-presence": { "title": "Status pemutaran Discord", "description": "Buka pengaturan Discord Rich Presence" },
       "settings-obs-browser-source": { "title": "Sumber browser OBS", "description": "Buka pengaturan sumber browser OBS" },
+      "desktop-toggle-lyric-api": { "title": "API Lirik", "description": "Aktifkan atau nonaktifkan endpoint lirik lokal tanpa autentikasi" },
       "settings-storage": { "title": "Pengaturan penyimpanan", "description": "Buka pengaturan cache dan penyimpanan" },
       "settings-desktop": { "title": "Pengaturan desktop", "description": "Buka pengaturan aplikasi desktop" },
       "desktop-toggle-voice-input-pause": { "title": "Jeda input suara", "description": "Alihkan jeda pemutaran saat input suara" },
@@ -386,6 +387,14 @@ export default {
     "loginNote": "Buka Aplikasi Netease Music > Jelajahi > Pindai QR",
     "loginTitleKugou": "Pindai dengan KuGou Music",
     "loginNoteKugou": "Buka KuGou Music dan pindai kode QR ini",
+    "loginTitleQq": "Pindai untuk masuk ke QQ Music",
+    "loginNoteQq": "Pindai kode QR ini dengan aplikasi yang sesuai",
+    "qqLoginMethodTitle": "Pilih metode masuk",
+    "qqLoginMethodHint": "Pilih metode sesuai jenis akun yang tertaut ke aplikasi QQ Music Anda",
+    "qqLoginMethodPending": "Pilih metode masuk untuk membuat kode QR",
+    "qqLoginMethodCurrent": "Metode saat ini: {{method}}",
+    "qqLoginMethodMobile": "QQ",
+    "qqLoginMethodWechat": "WeChat",
     "loadingQr": "Memuat QR...",
     "scanQr": "Silakan pindai kode QR",
     "qrExpired": "Kode QR kedaluwarsa. Segarkan untuk mencoba lagi.",
@@ -505,6 +514,16 @@ export default {
     "playbackSettingsPanelDesc": "Perilaku pemutaran, sumber lirik, output audio, dan pengaturan terkait.",
     "integrationSettings": "Pengaturan integrasi",
     "integrationSettingsDesc": "Koneksi untuk aplikasi dan layanan eksternal.",
+    "lyricApi": "API Lirik",
+    "enableLyricApi": "Aktifkan API Lirik",
+    "lyricApiDesc": "Sediakan endpoint lokal pada port tetap tanpa autentikasi agar program eksternal dapat membaca data lirik ringkas untuk lagu saat ini. Hanya mendengarkan pada 127.0.0.1.",
+    "lyricApiAddress": "Endpoint",
+    "copyLyricApiAddress": "Salin endpoint",
+    "lyricApiRunning": "Berjalan",
+    "lyricApiUnavailable": "Tidak tersedia",
+    "lyricApiEnabledStatus": "API Lirik aktif di http://127.0.0.1:32109/v1/lyric",
+    "lyricApiDisabledStatus": "API Lirik dinonaktifkan",
+    "lyricApiEnableFailed": "Gagal memulai API Lirik",
     "storageSettings": "Pengaturan penyimpanan",
     "storageSettingsDesc": "Penggunaan cache, pembersihan, cache media, dan direktori cache.",
     "storageSettingsPanelDesc": "Penggunaan cache, pembersihan, dan perilaku cache media.",
@@ -1070,6 +1089,40 @@ export default {
     "noDescription": "Tidak ada deskripsi tersedia",
   },
   "releaseNotes": {
+    "v0_6_17": {
+      "intro": "Berikut fitur dan peningkatan baru pada versi 0.6.17.",
+      "sonnetSceneVariants": {
+        "title": "Lebih Banyak Variasi Adegan Sonnet",
+        "description": "Sonnet kini menggunakan 100 komposisi latar, dengan tema langit, laut, musik, kerajinan, dan kinetik baru serta variasi bingkai dan geometri yang lebih beragam."
+      },
+      "sonnetDrawingMotion": {
+        "title": "Animasi Gambar Berlapis",
+        "description": "Garis, isian, dan elemen dekoratif Sonnet kini muncul dalam urutan gambar bertahap untuk transisi adegan yang lebih kaya dan alami."
+      },
+      "equalizerDaylight": {
+        "title": "Equalizer Lebih Jelas di Tema Terang",
+        "description": "Kontras, permukaan, kontrol, dan warna aksen yang ditingkatkan membuat equalizer audio lebih mudah dibaca dan digunakan pada tema terang."
+      }
+    },
+    "v0_6_16": {
+      "intro": "Berikut fitur dan peningkatan baru pada versi 0.6.16.",
+      "qqMusicProvider": {
+        "title": "Integrasi Awal QQ Music",
+        "description": "Fitur dasar untuk masuk akun, pencarian online, dan pemutaran kini tersedia. Dukungan fitur masih terbatas dan akan diperluas pada rilis mendatang."
+      },
+      "audioEqualizer": {
+        "title": "Equalizer Audio",
+        "description": "Sesuaikan dan simpan pengaturan equalizer dari kontrol pemutaran agar suara lebih cocok untuk perangkat Anda."
+      },
+      "lyricApi": {
+        "title": "API Lirik Desktop",
+        "description": "API lokal baru memungkinkan aplikasi eksternal membaca lagu yang sedang diputar dan lirik tersinkronisasi."
+      },
+      "localSongCovers": {
+        "title": "Sampul Lagu Lokal",
+        "description": "Kini Anda dapat mengimpor, menampilkan, dan menyimpan sampul khusus untuk setiap lagu lokal."
+      }
+    },
     "v0_6_15": {
       "intro": "Berikut fitur dan peningkatan baru pada versi 0.6.15.",
       "sonnetLensEffects": {

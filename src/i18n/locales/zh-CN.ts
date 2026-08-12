@@ -141,6 +141,11 @@ export default {
     "likeFailed": "添加失败",
     "unliked": "已取消喜欢",
     "playlistUpdated": "歌单已更新",
+    "providerLikeUnavailable": "{{provider}} 暂不支持喜欢歌曲。",
+    "providerPlaylistMutationUnavailable": "{{provider}} 暂不支持将歌曲添加到歌单。",
+    "providerRecommendationsUnavailable": "{{provider}} 暂未提供推荐内容。",
+    "providerUserAlbumsUnavailable": "{{provider}} 暂未提供用户专辑库。",
+    "providerLibraryUnavailable": "{{provider}} 暂未提供歌单库。",
     "songUnavailable": "歌曲已下架",
     "songUnavailableSkipping": "歌曲已下架，正在跳过",
     "songUnavailablePrompt": "歌曲已下架，{{seconds}} 秒后自动跳过",
@@ -231,10 +236,12 @@ export default {
       "playback-replaygain-off": { "title": "关闭 ReplayGain", "description": "播放音频时不应用 ReplayGain 调整" },
       "playback-replaygain-track": { "title": "ReplayGain：单曲模式", "description": "按每首歌曲的 ReplayGain 数据调整响度" },
       "playback-replaygain-album": { "title": "ReplayGain：专辑模式", "description": "按专辑 ReplayGain 数据调整响度" },
+      "playback-equalizer": { "title": "音频均衡器", "description": "打开十段音频均衡器" },
       "settings-local-lyrics-priority": { "title": "本地歌曲歌词优先级", "description": "选择本地歌曲优先使用本地或在线歌词" },
       "settings-integration": { "title": "集成设置", "description": "打开 Stage、Now Playing 和 Navidrome 设置" },
       "settings-discord-presence": { "title": "Discord 播放状态", "description": "打开 Discord Rich Presence 设置" },
       "settings-obs-browser-source": { "title": "OBS 浏览器源", "description": "打开 OBS 浏览器源设置" },
+      "desktop-toggle-lyric-api": { "title": "歌词接口", "description": "切换本地免鉴权歌词接口" },
       "settings-storage": { "title": "存储设置", "description": "打开缓存和存储设置" },
       "settings-r2-sync": { "title": "同步服务设置", "description": "打开同步服务设置" },
       "sync-now": { "title": "立即同步", "description": "同步 AI 主题" },
@@ -358,6 +365,22 @@ export default {
     "pause": "暂停",
     "close": "关闭",
     "volume": "音量",
+    "openEqualizer": "打开音频均衡器",
+    "equalizerTitle": "10 段音频均衡器",
+    "equalizerDescription": "从低频到高频调节播放声音，修改会自动保存。",
+    "equalizerEnabled": "均衡器已开启",
+    "equalizerDisabled": "均衡器已关闭",
+    "equalizerGain": "频段增益",
+    "equalizerReset": "重置均衡器",
+    "equalizerPreset": {
+      "flat": "水平",
+      "lofi": "Lo-Fi",
+      "radio": "收音机",
+      "vinyl": "黑胶",
+      "vocal": "人声",
+      "bass": "低音增强",
+      "custom": "自定义"
+    },
     "cadenze": {
       "fontScale": "字体比例",
       "widthRatio": "行宽",
@@ -423,6 +446,14 @@ export default {
     "loginNote": "打开网易云音乐APP > 发现 > 扫一扫",
     "loginTitleKugou": "使用酷狗音乐APP扫码",
     "loginNoteKugou": "打开酷狗音乐APP扫描二维码",
+    "loginTitleQq": "扫码登录QQ音乐",
+    "loginNoteQq": "请使用对应 App 扫码登录",
+    "qqLoginMethodTitle": "选择登录方式",
+    "qqLoginMethodHint": "请根据 QQ 音乐 App 绑定的账号类型选择登录方式\nQQ 绑定账号请选择 QQ，微信绑定账号请选择微信",
+    "qqLoginMethodPending": "选择登录方式后生成二维码",
+    "qqLoginMethodCurrent": "当前登录方式：{{method}}",
+    "qqLoginMethodMobile": "QQ",
+    "qqLoginMethodWechat": "微信",
     "switchOnlineProvider": "切换在线音乐平台",
     "confirmOnlineProviderSwitch": "切换到 {{provider}}？当前在线播放与队列将被清空。",
     "onlineProvider": "在线音乐平台",
@@ -562,6 +593,16 @@ export default {
     "replayGainModeDesc": "检测到增益数据时，按单曲或专辑 ReplayGain 统一播放响度。",
     "integrationSettings": "连接与集成",
     "integrationSettingsDesc": "外部程序接入设置。",
+    "lyricApi": "歌词接口",
+    "enableLyricApi": "启用歌词接口",
+    "lyricApiDesc": "在固定端口上提供无需鉴权的本地接口，外部程序可读取当前歌曲的精简歌词数据。仅监听 127.0.0.1。",
+    "lyricApiAddress": "接口地址",
+    "copyLyricApiAddress": "复制接口地址",
+    "lyricApiRunning": "运行中",
+    "lyricApiUnavailable": "不可用",
+    "lyricApiEnabledStatus": "歌词接口已在 http://127.0.0.1:32109/v1/lyric 启用",
+    "lyricApiDisabledStatus": "歌词接口已关闭",
+    "lyricApiEnableFailed": "歌词接口启动失败",
     "storageSettings": "存储与同步",
     "storageSettingsDesc": "缓存占用、清理、主题云同步。",
     "storageSettingsPanelDesc": "缓存占用、清理、主题云同步。",
@@ -1274,6 +1315,40 @@ export default {
     "noDescription": "暂无详细介绍",
   },
   "releaseNotes": {
+    "v0_6_17": {
+      "intro": "以下是 0.6.17 的新功能与改进",
+      "sonnetSceneVariants": {
+        "title": "更多商籁场景变体",
+        "description": "商籁现已扩展至 100 种背景构图，新增天体、海洋、音乐、工艺与动感主题，并带来更多边框和几何变化。"
+      },
+      "sonnetDrawingMotion": {
+        "title": "分层绘制动效",
+        "description": "商籁的线条、填充与装饰元素现在会按错落节奏逐步绘制，让场景转场更丰富、更自然。"
+      },
+      "equalizerDaylight": {
+        "title": "浅色均衡器显示优化",
+        "description": "提升浅色主题下的对比度，并优化面板、控件和强调色，让音频均衡器更清晰易用。"
+      }
+    },
+    "v0_6_16": {
+      "intro": "以下是 0.6.16 的新功能与改进",
+      "qqMusicProvider": {
+        "title": "QQ 音乐初步接入",
+        "description": "目前提供基础的账号登录、在线搜索与播放能力，支持的功能仍较少，后续版本将继续完善。"
+      },
+      "audioEqualizer": {
+        "title": "音频均衡器",
+        "description": "可在播放控制面板中调节均衡器并保存声音设置，让不同设备获得更合适的听感。"
+      },
+      "lyricApi": {
+        "title": "桌面歌词 API",
+        "description": "新增本地歌词接口，方便外部应用读取当前播放歌曲与同步歌词。"
+      },
+      "localSongCovers": {
+        "title": "本地单曲封面",
+        "description": "现在可以为本地单曲导入、显示并持久化自定义封面。"
+      }
+    },
     "v0_6_15": {
       "intro": "以下是 0.6.15 的新功能与改进",
       "sonnetLensEffects": {
