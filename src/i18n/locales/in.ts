@@ -418,6 +418,30 @@ export default {
     "searchNavidrome": "Cari navidrome",
     "gridSearchPlaceholder": "Filter lagu...",
     "gridSearchNoResults": "Tidak ada lagu yang cocok",
+    "gridBatchSelectionSummary": {
+      "folders": "{{selected}}/{{total}} folder · {{tracks}} lagu",
+      "albums": "{{selected}}/{{total}} album · {{tracks}} lagu",
+      "artists": "{{selected}}/{{total}} artis · {{tracks}} lagu"
+    },
+    "gridBatchTrackCount": "{{count}} lagu",
+    "gridFolderSelectAll": "Pilih semua",
+    "gridFolderSelectNone": "Batalkan semua",
+    "gridFolderTreeToggle": "Buka atau tutup folder",
+    "gridFolderTrackCount": "{{count}} lagu dalam subpohon",
+    "gridFolderTreeSelectionCount": "{{selected}}/{{total}} folder terfilter dipilih",
+    "gridFolderTreeEmpty": "Snapshot direktori impor tidak tersedia.",
+    "gridFolderExpandTreePanel": "Perluas",
+    "gridFolderCollapseTreePanel": "Ciutkan",
+    "gridFolderRescanRoot": "Pindai ulang direktori akar",
+    "gridFolderRemoveRoot": "Hapus direktori akar impor",
+    "gridFolderAddToQueue": "Tambahkan ke antrean",
+    "gridFolderRemoveSelected": "Hapus dari pustaka",
+    "gridFolderCreatePlaylistDescription": "Buat playlist dengan {{count}} lagu lokal terpilih.",
+    "gridFolderPlaylistNamePlaceholder": "Nama playlist",
+    "gridFolderRemoveSelectedTitle": "Hapus lagu terpilih?",
+    "gridFolderRemoveSelectedDescription": "Menghapus {{count}} lagu dari Folia dan playlistnya. Berkas di disk tidak akan dihapus.",
+    "gridFolderRemoveRootTitle": "Hapus direktori akar impor?",
+    "gridFolderRemoveRootDescription": "Hapus {{path}} dan semua lagunya dari Folia? Berkas di disk tidak akan dihapus.",
     "login": "Login",
     "welcomeBack": "Selamat Datang Kembali",
     "guestTitle": "Coba cari beberapa lagu dulu",
@@ -1089,6 +1113,29 @@ export default {
     "noDescription": "Tidak ada deskripsi tersedia",
   },
   "releaseNotes": {
+    "v0_6_18": {
+      "intro": "Berikut fitur dan peningkatan baru pada versi 0.6.18.",
+      "m3uPlaylists": {
+        "title": "Playlist M3U8 Portabel",
+        "description": "Impor file .m3u8 ke pustaka lokal dan ekspor playlist Folia sebagai M3U8 UTF-8 dengan jalur yang mudah dipindahkan. Jalur yang tidak cocok atau ambigu akan dilaporkan, bukan ditambahkan diam-diam."
+      },
+      "gridMapBatchTools": {
+        "title": "Cari dan Kelola Koleksi Lokal",
+        "description": "Pencarian GridMap kini mendukung beberapa istilah pada nama, jalur, dan metadata. Pilih folder, album, atau artis secara massal untuk memutar, menambahkan ke antrean, membuat playlist, atau menghapusnya dari pustaka; folder juga dapat dipindai ulang tanpa menghapus berkas di disk."
+      },
+      "foliaIgnore": {
+        "title": "Aturan .foliaignore yang Fleksibel",
+        "description": "Tambahkan .foliaignore di direktori akar atau subfolder impor untuk mengecualikan berkas sementara, direktori cache, dan audio yang tidak diperlukan dengan pola bergaya gitignore. Perubahan berlaku saat impor ulang berikutnya."
+      },
+      "incrementalLocalScans": {
+        "title": "Pemindaian Pustaka Lebih Cepat",
+        "description": "Impor ulang kini menggunakan kembali berkas yang tidak berubah, mendeteksi konten baru dan yang dihapus, serta memuat metadata di latar belakang agar pustaka lokal besar lebih cepat diperbarui."
+      },
+      "localCoverAssets": {
+        "title": "Penyimpanan Sampul Lokal Lebih Efisien",
+        "description": "Sampul lokal dideduplikasi berdasarkan konten dan disimpan sebagai aset persisten; antarmuka memakai thumbnail berukuran sesuai kebutuhan untuk mengurangi penyimpanan duplikat dan pemrosesan gambar penuh yang tidak perlu."
+      }
+    },
     "v0_6_17": {
       "intro": "Berikut fitur dan peningkatan baru pada versi 0.6.17.",
       "sonnetSceneVariants": {
@@ -1225,6 +1272,8 @@ export default {
     "sortDescending": "Menurun",
     "importFolder": "Impor Folder",
     "importing": "Mengimpor...",
+    "importPlaylist": "Impor Playlist",
+    "importingPlaylist": "Mengimpor playlist...",
     "noLocalMusic": "Belum ada musik lokal yang diimpor",
     "noFoldersFound": "Tidak ada folder ditemukan",
     "noAlbumsFound": "Tidak ada album ditemukan",
@@ -1312,6 +1361,12 @@ export default {
     "editPlaylist": "Edit Playlist",
     "finishEditing": "Selesai Mengedit",
     "deletePlaylist": "Hapus Playlist",
+    "exportPlaylist": "Ekspor M3U8",
+    "playlistImportSuccess": "Playlist “{{name}}” diimpor dengan {{count}} trek.",
+    "playlistImportPartial": "{{count}} trek diimpor ke “{{name}}”; {{skipped}} jalur tidak ditemukan atau ambigu.",
+    "playlistImportNoMatches": "Tidak ada jalur playlist yang cocok dengan lagu lokal yang telah diimpor ke Folia.",
+    "playlistImportFailed": "Impor playlist gagal. Pastikan file adalah playlist M3U atau M3U8 yang valid.",
+    "playlistExportSuccess": "Playlist “{{name}}” diekspor.",
     "lyricsNotAppliedOtherSaved": "Lirik tidak diterapkan; pilihan lainnya telah disimpan."
   },
   "navidrome": {
