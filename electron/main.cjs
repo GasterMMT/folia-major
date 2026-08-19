@@ -14,6 +14,7 @@ const { createDisplaySleepBlocker } = require('./displaySleepBlocker.cjs');
 const { createLyricApi } = require('./lyricApi.cjs');
 const { createLocalCoverAssetStore, getLocalCoverAssetDirectory } = require('./localCoverAssets.cjs');
 const { getReleaseUrl, getUpdateProviderConfig, resolveReleaseChannel } = require('./updateChannels.cjs');
+const { resolveLinuxPasswordStore } = require('./linuxPasswordStore.cjs');
 const { sanitizeDualTheme: sanitizeGeneratedDualTheme } = require('../shared/themeSanitizer.cjs');
 const useLinuxGraphicsDebugMode = process.env.ELECTRON_LINUX_PACKAGED_GRAPHICS === 'true';
 const isAppImageRuntime =
@@ -59,6 +60,13 @@ app.on('certificate-error', (event, _webContents, requestUrl, error, _certificat
 
 // Fix for Arch Linux / Wayland & Vulkan compatibility issues
 if (process.platform === 'linux') {
+  // Must run before the ready event: Chromium reads the password backend once while initialising
+  // OSCrypt, and the default detection leaves unrecognised desktops without any real encryption.
+  const linuxPasswordStore = resolveLinuxPasswordStore();
+  if (linuxPasswordStore) {
+    app.commandLine.appendSwitch('password-store', linuxPasswordStore);
+  }
+
   app.commandLine.appendSwitch('disable-vulkan');
   app.commandLine.appendSwitch('disable-features', 'Vulkan');
   app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
@@ -130,12 +138,62 @@ const mainLocale = {
   },
 };
 
+// Maps an arbitrary BCP 47 tag onto one of the three locales the main process ships.
+// Returns null for unsupported tags so callers can keep walking the preference list.
+function normalizeMainLocaleKey(value) {
+  if (typeof value !== 'string' || !value) {
+    return null;
+  }
+
+  const lowered = value.toLowerCase();
+  if (lowered === 'in' || lowered.startsWith('id')) {
+    return 'in';
+  }
+  if (lowered.startsWith('zh')) {
+    return 'zh-CN';
+  }
+  if (lowered.startsWith('en')) {
+    return 'en';
+  }
+  return null;
+}
+
+// Used before the renderer has ever pushed APP_LOCALE, so a fresh install shows
+// tray and dialog text in the system language instead of hard-defaulting to English.
+// Both Electron locale APIs require `ready`, which every caller here is past.
+function detectSystemLocaleKey() {
+  const candidates = [];
+
+  if (typeof app.getPreferredSystemLanguages === 'function') {
+    try {
+      candidates.push(...app.getPreferredSystemLanguages());
+    } catch (error) {
+      console.warn('[Electron] Failed to read preferred system languages', error);
+    }
+  }
+
+  try {
+    candidates.push(app.getLocale());
+  } catch (error) {
+    console.warn('[Electron] Failed to read app locale', error);
+  }
+
+  for (const candidate of candidates) {
+    const normalized = normalizeMainLocaleKey(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return 'en';
+}
+
 function getMainLocale() {
   const stored = store.get(APP_LOCALE_KEY);
   if (stored === 'zh-CN' || stored === 'en' || stored === 'in') {
     return mainLocale[stored];
   }
-  return mainLocale.en;
+  return mainLocale[detectSystemLocaleKey()];
 }
 
 
@@ -3004,6 +3062,18 @@ async function setMainWindowTransparentModeFromRemote(enabled) {
 app.whenReady().then(async () => {
   if (process.platform === 'win32') {
     app.setAppUserModelId(WINDOWS_APP_USER_MODEL_ID);
+  }
+
+  if (process.platform === 'linux' && typeof safeStorage.getSelectedStorageBackend === 'function') {
+    const backend = safeStorage.getSelectedStorageBackend();
+    // Without a real backend the KuGou and QQ repositories keep credentials in memory only, so this
+    // line is the fastest way to tell a lost-login report apart from an authentication bug.
+    if (backend === 'basic_text' || !safeStorage.isEncryptionAvailable()) {
+      console.warn('[Electron] No OS credential encryption available; online accounts will not persist', {
+        backend,
+        desktop: process.env.XDG_CURRENT_DESKTOP || null,
+      });
+    }
   }
 
   setupFileSystemAccessPermissionHandlers();
