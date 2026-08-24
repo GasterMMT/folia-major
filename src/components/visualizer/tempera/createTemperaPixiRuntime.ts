@@ -24,6 +24,7 @@ import {
     type TemperaSceneView,
     type TemperaShotView,
 } from './temperaSceneBuilder';
+import { setTemperaTransitionBlur } from './temperaSceneFilters';
 import { resolveTemperaPalette } from './temperaPalette';
 import {
     clamp01,
@@ -120,6 +121,8 @@ const resolveCreditsFrame = (time: number, finalEndTime: number) => {
  */
 const requiresSceneRebuild = (previous: TemperaTuning, next: TemperaTuning) => (
     previous.colorMode !== next.colorMode
+    // Renderer resolution and fixed-resolution filter passes must change together.
+    || previous.textureResolution !== next.textureResolution
     // Entrance pacing is baked into each glyph's settleTime at layout time, unlike glyphMotion
     // which the solver reads fresh every frame.
     || previous.glyphSettleStretch !== next.glyphSettleStretch
@@ -128,6 +131,8 @@ const requiresSceneRebuild = (previous: TemperaTuning, next: TemperaTuning) => (
     || previous.textInversion !== next.textInversion
     || previous.enableTransitions !== next.enableTransitions
     || previous.postProcessEnabled !== next.postProcessEnabled
+    // Baked into every filter on the scene at build time, so it cannot be pushed in place.
+    || previous.postProcessTextureCompression !== next.postProcessTextureCompression
     || previous.postProcessGrain !== next.postProcessGrain
     || previous.postProcessContrast !== next.postProcessContrast
     || previous.postProcessRgbShift !== next.postProcessRgbShift
@@ -137,7 +142,9 @@ const requiresSceneRebuild = (previous: TemperaTuning, next: TemperaTuning) => (
     || previous.layerImageFrequency !== next.layerImageFrequency
     || previous.layerImages.length !== next.layerImages.length
     || previous.layerImages.some((image, index) => (
-        image.id !== next.layerImages[index]?.id || image.align !== next.layerImages[index]?.align
+        image.id !== next.layerImages[index]?.id
+        || image.align !== next.layerImages[index]?.align
+        || image.verticalAlign !== next.layerImages[index]?.verticalAlign
     ))
 );
 
@@ -628,10 +635,9 @@ export class TemperaPixiRuntime {
             );
             scene.container.scale.set(transitionFrame.scale);
             scene.container.rotation = transitionFrame.rotation;
-            if (scene.transitionBlurFilter) {
-                scene.transitionBlurFilter.strength = transitionFrame.blur;
-                scene.transitionBlurFilter.enabled = transitionFrame.blur > 0.01;
-            }
+            // Attached only while it blurs: a parked filter on this container would take
+            // over the lyric inversion's backdrop copy (`temperaSceneFilters.ts`).
+            setTemperaTransitionBlur(scene, transitionFrame.blur);
             if (transitionFrame.wipe > 0.001 && transitionFrame.wipe < 1.999) {
                 this.drawWipe(
                     transitionFrame.wipe,
@@ -677,6 +683,12 @@ export class TemperaPixiRuntime {
         const previous = this.options.tuning;
         if (previous === tuning) return;
         this.options.tuning = tuning;
+        if (previous.textureResolution !== tuning.textureResolution) {
+            // Pixi can resize the backing surface without recreating the WebGL application or
+            // decoding the shared image pool again. The scene rebuild below refreshes text and
+            // fixed-resolution filters against that new surface.
+            this.app.renderer.resolution = tuning.textureResolution;
+        }
         if (requiresSceneRebuild(previous, tuning)) {
             this.clearScenes();
             // Before the first resize pass there is nothing sized to redraw; the install pass

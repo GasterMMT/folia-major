@@ -172,6 +172,9 @@ export default {
     "queueShuffled": "Antrean diacak",
     "queueCleared": "Antrean dikosongkan",
     "queueUpdated": "Ditambahkan ke antrean",
+    "queueBatchRemoved": "{{count}} lagu dihapus dari antrean",
+    "queueBatchMovedNext": "{{count}} lagu dipindahkan untuk diputar berikutnya",
+    "queueBatchMovedEnd": "{{count}} lagu dipindahkan ke akhir antrean",
     "copiedSongInfo": "Info lagu disalin",
     "copied": "Disalin",
     "copyFailed": "Gagal menyalin, coba lagi",
@@ -221,6 +224,29 @@ export default {
     "previewQueueSearch": "Cari antrean saat ini: {{query}}",
     "previewQueueSearchEmpty": "Ketik nama lagu, artis, album, atau indeks antrean",
     "queueIndex": "Antrean #{{index}}",
+    "queueFacet": "Metadata",
+    "queueFacetArtist": "Artis",
+    "queueFacetAlbum": "Album",
+    "queueCurrentFacets": "Artis atau album lagu saat ini",
+    "queueCurrent": "Lagu saat ini",
+    "queueActionRemove": "Hapus hasil",
+    "queueActionNext": "Pindahkan hasil untuk diputar berikutnya",
+    "queueActionEnd": "Pindahkan hasil ke akhir antrean",
+    "queueClearAction": "Hapus aksi massal",
+    "queueClearFacet": "Hapus filter artis atau album",
+    "queueBatchPreview": "{{count}} lagu yang cocok akan terpengaruh",
+    "queueBatchNeedsFilter": "Tambahkan pencarian atau filter @ sebelum menjalankan aksi massal",
+    "queueBatchSkippedCurrent": "Lagu yang sedang diputar dikecualikan",
+    "queueBatchConfirm": "Konfirmasi",
+    "queueNoMatches": "Tidak ada lagu yang cocok di antrean",
+    "queueSyntaxHint": "Gunakan @ untuk filter artis/album · gunakan -- untuk aksi massal",
+    "volumeInputPlaceholder": "Masukkan volume dari 0 sampai 100",
+    "volumeCurrent": "Volume saat ini: {{value}}%",
+    "volumeInvalid": "Masukkan angka dari 0 sampai 100",
+    "volumeSetPreview": "Atur volume ke {{value}}%",
+    "volumeControlTitle": "Volume pemutaran",
+    "volumeControlHint": "Geser penggeser atau masukkan angka di atas",
+    "volumeMutedHint": "Dibisukan; perubahan berlaku setelah suara diaktifkan",
     "sourceCurrent": "sumber saat ini",
     "sourceLocal": "perpustakaan lokal",
     "sourceNavidrome": "Navidrome",
@@ -237,7 +263,8 @@ export default {
       "search-local": { "title": "Cari lagu lokal", "description": "Cari di perpustakaan lokal" },
       "search-navidrome": { "title": "Cari lagu Navidrome", "description": "Cari di perpustakaan Navidrome" },
       "search-netease": { "title": "Cari lagu NetEase", "description": "Cari di NetEase Cloud Music" },
-      "queue": { "title": "Antrean", "description": "Cari di antrean putar saat ini" },
+      "queue": { "title": "Antrean", "description": "Cari antrean; gunakan @ untuk metadata dan -- untuk aksi massal" },
+      "playback-volume": { "title": "Volume", "description": "Atur volume pemutaran" },
       "settings-help": { "title": "Buka Bantuan", "description": "Buka panduan dan pintasan" },
       "show-user-guide": { "title": "Tampilkan Panduan Pengguna", "description": "Buka tutorial panduan pengguna" },
       "settings-options": { "title": "Buka Opsi", "description": "Buka pusat opsi" },
@@ -634,7 +661,9 @@ export default {
     "seekBackward": "Mundur 5d",
     "hidePlayerChrome": "Sembunyikan bilah progres dan tombol kanan bawah",
     "toggleRightPanel": "Alihkan panel kanan",
+    "cycleRightPanelTabs": "Gilir tab panel kanan yang terbuka",
     "openCommandPalette": "Buka palette perintah",
+    "openCommandPaletteQueue": "Buka antrean di palette perintah",
     "browserFullscreen": "Layar penuh",
     "madeBy": "Proyek:",
     "version": "versi"
@@ -752,6 +781,7 @@ export default {
     "r2Sync": "Server Sinkronisasi",
     "r2SyncEnable": "Aktifkan server sinkronisasi",
     "r2SyncEnableDesc": "Sinkronkan pengaturan tampilan dan tema AI melalui Cloudflare D1 Worker Anda sendiri atau layanan sinkronisasi self-hosted.",
+    "r2SyncDeployDocs": "Panduan penerapan",
     "r2SyncWorkerUrl": "URL Server Sinkronisasi",
     "r2SyncToken": "Token Bearer",
     "r2SyncTokenPlaceholder": "SYNC_TOKEN Worker",
@@ -1465,6 +1495,29 @@ export default {
     "noDescription": "Tidak ada deskripsi tersedia"
   },
   "releaseNotes": {
+    "v0_6_22": {
+      "intro": "Berikut fitur baru dan peningkatan di versi 0.6.22.",
+      "stillVisualizer": {
+        "title": "Visualizer Lirik Statis",
+        "description": "Gunakan tampilan lirik tiga baris yang statis dan hemat sumber daya tanpa latar visualizer animasi, termasuk untuk lirik Browser Source OBS."
+      },
+      "commandPaletteEnhancements": {
+        "title": "Palet Perintah yang Lebih Cerdas",
+        "description": "Atur volume pemutaran dengan slider atau angka 0–100; perintah yang sering digunakan muncul lebih dulu di hasil pencarian."
+      },
+      "gridVisibility": {
+        "title": "Sembunyikan Lebih Banyak Koleksi Grid",
+        "description": "GridMap kini dapat menyembunyikan playlist, koleksi cloud, radio, dan rekomendasi harian agar tampilan beranda tetap fokus."
+      },
+      "temperaPerformance": {
+        "title": "Kontrol Performa Tempera",
+        "description": "Tempera kini mendukung hingga 16 gambar kustom dan opsi pass pasca-pemrosesan 1x untuk mengurangi penggunaan GPU dan VRAM dengan sedikit kompromi pada ketajaman."
+      },
+      "playbackCompatibility": {
+        "title": "Metadata Pemutaran yang Lebih Andal",
+        "description": "Pembaruan Media Session menunggu durasi trek baru siap; URL sampul QQ Music dan Kugou kini menggunakan ukuran gambar yang lebih sesuai."
+      }
+    },
     "v0_6_20": {
       "intro": "Berikut fitur baru dan peningkatan di versi 0.6.20.",
       "temperaVisualizer": {
