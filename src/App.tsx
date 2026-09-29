@@ -145,6 +145,9 @@ import { useThemeQuickEditorContext } from './hooks/useThemeQuickEditorContext';
 import { usePlayerBottomBarOffset } from './hooks/usePlayerBottomBarOffset';
 import { usePlayerBottomBarPositioningEntry } from './hooks/usePlayerBottomBarPositioningEntry';
 import { PlayerBottomBarLayoutContext } from './components/floating-player/PlayerBottomBarLayoutContext';
+import { useFoliumHostBridge } from './mods/folium/hostBridge';
+import { useFoliumHostActions } from './mods/folium/hostActions';
+import { FoliumStageLayerSlot } from './mods/folium/registries/stageLayers';
 
 const LOCAL_MUSIC_UPDATED_EVENT = 'folia-local-music-updated';
 const DEV_DEBUG_SHORTCUT_LABEL = 'Alt+Shift+D';
@@ -404,6 +407,7 @@ export default function App() {
         handleToggleAutoHidePlayerChrome,
         autoHideCursorWithPlayerChrome,
         alwaysShowMainWindowTitlebar,
+        hideFullscreenButton,
         handleToggleTransparentPlayerBackground,
     } = usePlayerChromeSettingsStore(useShallow(selectPlayerChromeSettingsSnapshot));
     const {
@@ -624,6 +628,9 @@ export default function App() {
         handleSongThemeAutoGenerateChange,
         handleThemeGenerationSourceChange,
     } = themeController;
+    // Folium: publish what is on screen to the main process (runtime snapshot
+    // for main-side mods and the export service).
+    useFoliumHostBridge(theme, isDaylight);
 
     useThemeQuickEditorContext({
         aiTheme,
@@ -1154,6 +1161,7 @@ export default function App() {
                 allowStopOnMissing: true,
                 shouldNavigateToPlayer: false,
                 fromSong: currentSong ?? undefined,
+                isAutomixAdvance: true,
             });
         },
         onDeckPlayedOut: (song, src) => cachePlayedOutRef.current(song, src),
@@ -2069,6 +2077,27 @@ export default function App() {
         stageLyricsClockRef,
         syncStageLyricsClock,
     ]);
+
+    // Folium services (folium.playback / folium.ui) call through to these App handlers.
+    useFoliumHostActions({
+        play: resumePlayback,
+        pause: pausePlayback,
+        toggle: () => togglePlay(),
+        seek: seekMainAudio,
+        seekToLyricTime: handleMonetLyricLineSeek,
+        next: () => { void handleNextTrack(); },
+        previous: handlePrevTrack,
+        playSong: (song) => playSong(song),
+        enqueue: addOnlineSongToQueue,
+        navigateToPlayer,
+        navigateToHome,
+        shuffleQueue,
+        toggleLike: handleLike,
+        openVolume: () => commandPalette.invokeCommandById('playback-volume'),
+        isLiked: commandPaletteContext.playback.isSongLiked,
+        controlsDisabled: isNowPlayingControlDisabled,
+    });
+
     const visualizerRendererModel = useVisualizerRendererModel({
         theme: visualizerTheme,
         subtitleTheme: visualizerSubtitleTheme,
@@ -2590,6 +2619,7 @@ export default function App() {
         <AppShell
             appStyle={appStyle}
             isElectronWindow={isElectronWindow}
+            hideFullscreenButton={hideFullscreenButton}
             usesCustomWindowChrome={usesCustomWindowChrome}
             useCustomWindowRadius={isElectronWindow && transparentPlayerBackground && !wallpaperMode}
             showTransparentWindowBorder={showTransparentWindowBorder}
@@ -2705,6 +2735,15 @@ export default function App() {
             />
 
             <AppOverlays model={appOverlaysModel} />
+
+            {/* Folium `app.overlay` stage layers: above the whole app, inert unless a layer opts in. */}
+            <FoliumStageLayerSlot
+                slot="app.overlay"
+                theme={theme}
+                isDaylight={isDaylight}
+                paused={playerState !== PlayerState.PLAYING}
+                className="fixed inset-0 pointer-events-none z-[1000]"
+            />
 
             {/* Not in the overlays model: it takes no state from this file and no click from anyone.
                 Mounted whenever its own switch is on, so the lazy animejs chunk loads only when it is

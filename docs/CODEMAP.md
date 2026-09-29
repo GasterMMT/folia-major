@@ -14,15 +14,15 @@
 | 区域 | 文件数量级 |
 | --- | --- |
 | components | 512+ |
-| test/dev | 256+ |
+| test/dev | 512+ |
 | services | 128+ |
 | utils | 128+ |
 | backend/electron | 64+ |
 | hooks | 64+ |
+| src (其他) | 32+ |
 | stores | 32+ |
+| 其他 | 32+ |
 | types | 16+ |
-| 其他 | 16+ |
-| src (其他) | 8+ |
 | i18n | 4+ |
 | workers | 2+ |
 
@@ -41,11 +41,13 @@
 | 32+ | `src/components/ponder/surfaces/ponderSurfaceGeometry.ts` |
 | 32+ | `src/components/visualizer/colorMix.ts` |
 | 32+ | `src/components/visualizer/definition.ts` |
+| 32+ | `src/mods/folium/contract.ts` |
 | 32+ | `src/services/db.ts` |
 | 32+ | `src/services/onlineMusic/songMetadata.ts` |
 | 32+ | `src/stores/useAppViewStore.ts` |
 | 32+ | `src/stores/usePlaybackStore.ts` |
 | 32+ | `src/stores/useStatusMessageStore.ts` |
+| 32+ | `src/utils/fontStacks.ts` |
 | 32+ | `src/utils/lyrics/parserCore.ts` |
 | 32+ | `src/utils/lyrics/renderHints.ts` |
 
@@ -79,6 +81,7 @@
 - `dev/probes/monetPortraitImage.probe.tsx`
 - `dev/probes/nowPlayingToastTransitionBorder.probe.tsx`
 - `dev/probes/playbackLyricsSettings.probe.tsx`
+- `dev/probes/playerBarModButtons.probe.tsx`
 - `dev/probes/playerBottomBar.probe.tsx`
 - `dev/probes/ponderHint.probe.tsx`
 - `dev/probes/ponderPageSurfaces.probe.tsx`
@@ -133,6 +136,7 @@
 - `src/components/ponder/targets/ponderBasics.target.ts`
 - `src/components/ponder/targets/queueCommandSurface.target.ts`
 - `src/components/ponder/targets/queueSettings.target.ts`
+- `src/components/ponder/targets/queueShuffle.target.ts`
 - `src/components/ponder/targets/replayGainSettings.target.ts`
 - `src/components/ponder/targets/settingsPage.target.ts`
 - `src/components/ponder/targets/sidePanel.target.ts`
@@ -158,6 +162,7 @@
 - `src/components/visualizer/classic/entry.tsx`
 - `src/components/visualizer/diorama/entry.tsx`
 - `src/components/visualizer/fume/entry.tsx`
+- `src/components/visualizer/lumiere/entry.tsx`
 - `src/components/visualizer/monet/entry.tsx`
 - `src/components/visualizer/partita/entry.tsx`
 - `src/components/visualizer/pendolo/entry.tsx`
@@ -174,6 +179,7 @@
 - `src/components/visualizer/classic/tuning.ts`
 - `src/components/visualizer/diorama/tuning.ts`
 - `src/components/visualizer/fume/tuning.ts`
+- `src/components/visualizer/lumiere/tuning.ts`
 - `src/components/visualizer/monet/tuning.ts`
 - `src/components/visualizer/partita/tuning.ts`
 - `src/components/visualizer/pendolo/tuning.ts`
