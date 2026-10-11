@@ -3,7 +3,12 @@ import '../../src/i18n/config';
 import GridViewOverlayHost from '../../src/library/app/GridViewOverlayHost';
 import type { ProbeDefinition } from './definition';
 import { ProbeControlPanel } from './libraryBehavior/ProbeControlPanel';
-import { onProbeBackCollection, useLibraryProbeHarness } from './libraryBehavior/useLibraryProbeHarness';
+import {
+    onProbeBackCollection,
+    onProbePopCollectionTo,
+    useLibraryProbeHarness,
+} from './libraryBehavior/useLibraryProbeHarness';
+import { usePaletteTypingStandIn } from './paletteTypingStandIn';
 // dev/probes/libraryBehavior.probe.tsx
 
 /**
@@ -18,6 +23,8 @@ import { onProbeBackCollection, useLibraryProbeHarness } from './libraryBehavior
  */
 const LibraryBehaviorProbe: React.FC = () => {
     const harness = useLibraryProbeHarness();
+    // 墙上打字交给 bravais 缝里的过滤输入位（命令面板那一支的替身，见 paletteTypingStandIn）。
+    usePaletteTypingStandIn();
 
     return (
         <div className="fixed inset-0" style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)' }}>
@@ -32,6 +39,7 @@ const LibraryBehaviorProbe: React.FC = () => {
                         surfaceProps={harness.surfaceProps}
                         onOpenCollection={harness.onOpenCollection}
                         onPushCollection={harness.onPushCollection}
+                        onPopCollectionTo={onProbePopCollectionTo}
                         onBackCollection={onProbeBackCollection}
                         isInteractive
                     >

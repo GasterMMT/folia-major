@@ -28,12 +28,13 @@ import { createFoliaIgnoreMatcher, isIgnoredByFoliaMatchers, type FoliaIgnoreMat
 import { getLocalLibraryAvailability } from './localLibraryAvailability';
 import { useLyricSettingsStore } from '../stores/useLyricSettingsStore';
 import { getLocalLyricFilePriority, isSameLocalLyricFormatOrder, normalizeLocalLyricFormatOrder, type LocalLyricFileFormat } from '../utils/lyrics/localLyricFormatOrder';
+import { readLyricFile } from '../utils/lyrics/lyricFileDecoding';
 import { isLocalFolderIgnored, normalizeLocalFolderPath, runLocalFolderMutation, setLocalFolderIgnored } from './localLibraryFolderIgnore';
 
 
 type EmbeddedMetadata = EmbeddedMetadataResult;
 
-export const EMBEDDED_METADATA_VERSION = 6;
+export const EMBEDDED_METADATA_VERSION = 7;
 
 interface ImportPreparationMetrics {
     getFileMs: number;
@@ -824,7 +825,7 @@ async function buildImportedSong(
     } else if (lrcMap.has(baseName)) {
         try {
             const lyricCandidate = lrcMap.get(baseName)!;
-            localLyricsContent = await lyricCandidate.file.text();
+            localLyricsContent = await readLyricFile(lyricCandidate.file);
             localLyricsFormat = lyricCandidate.format;
         } catch (e) {
             console.error(`[LocalMusic] Failed to read local lyric for ${file.name}`, e);
@@ -835,7 +836,7 @@ async function buildImportedSong(
         localTranslationLyricsContent = existingSong?.localTranslationLyricsContent;
     } else if (tlrcMap.has(baseName)) {
         try {
-            localTranslationLyricsContent = await tlrcMap.get(baseName)!.text();
+            localTranslationLyricsContent = await readLyricFile(tlrcMap.get(baseName)!);
         } catch (e) {
             console.error(`[LocalMusic] Failed to read local translation lyric for ${file.name}`, e);
         }
@@ -934,6 +935,7 @@ async function buildImportedSong(
         replayGainAlbumPeak: embeddedMetadata.replayGainAlbumPeak,
         matchedLyrics: existingSong?.matchedLyrics,
         matchedIsPureMusic: existingSong?.matchedIsPureMusic,
+        markedPureMusic: existingSong?.markedPureMusic,
         matchedLyricsSongId: existingSong?.matchedLyricsSongId,
         matchedLyricsSource: existingSong?.matchedLyricsSource,
         matchedLyricsProviderPlatform: existingSong?.matchedLyricsProviderPlatform,
@@ -1323,7 +1325,9 @@ function isTitleMatch(localTitle: string, searchTitle: string): boolean {
 
 // Match lyrics for a local song using search API, respecting the configured local/online priority.
 export async function matchLyrics(song: LocalSong): Promise<LyricData | null> {
-    if (song.matchedIsPureMusic && !shouldRefreshLocalSongLyricsFromMetadata(song)) {
+    // 用户标记的纯音乐不再自动匹配；与在线判定的纯音乐一样，连带的封面自动匹配也跳过。
+    // 下面每次写回都带 skipIfMarkedPureMusic：匹配途中才标上的，写回时在事务里按库里的最新记录放弃。
+    if (song.markedPureMusic || (song.matchedIsPureMusic && !shouldRefreshLocalSongLyricsFromMetadata(song))) {
         return null;
     }
     try {
@@ -1364,7 +1368,7 @@ export async function matchLyrics(song: LocalSong): Promise<LyricData | null> {
                     song.matchedLyrics = undefined;
                     song.matchedLyricsSongId = bestMatch.id ?? matchContext.metadataCandidate?.songId;
                     song.matchedLyricsSource = bestMatch.source ?? matchContext.metadataCandidate?.source;
-                    await applyMatchedMetadata(song.id, {}, { lyricsOnly: true, songPatch: song });
+                    await applyMatchedMetadata(song.id, {}, { lyricsOnly: true, songPatch: song, skipIfMarkedPureMusic: true });
                     return null;
                 }
 
@@ -1376,7 +1380,7 @@ export async function matchLyrics(song: LocalSong): Promise<LyricData | null> {
                     song.matchedIsPureMusic = false;
 
                     if (matchContext.metadataCandidate) {
-                        await applyMatchedMetadata(song.id, {}, { lyricsOnly: true, songPatch: song });
+                        await applyMatchedMetadata(song.id, {}, { lyricsOnly: true, songPatch: song, skipIfMarkedPureMusic: true });
                         return bestMatch.lyrics;
                     }
 
@@ -1404,6 +1408,7 @@ export async function matchLyrics(song: LocalSong): Promise<LyricData | null> {
                             useOnlineCover: Boolean(coverUrl && !hasLocalSongCover(song)),
                         },
                         protectOrigins: ['manual', 'manual-match', 'split'],
+                        skipIfMarkedPureMusic: true,
                     });
                     return bestMatch.lyrics;
                 }
@@ -1449,6 +1454,7 @@ export async function matchLyrics(song: LocalSong): Promise<LyricData | null> {
             }, {
                 songPatch: { ...song, useOnlineCover: Boolean(coverUrl && !hasLocalSongCover(song)) },
                 protectOrigins: ['manual', 'manual-match', 'split'],
+                skipIfMarkedPureMusic: true,
             });
 
             // Return null to indicate no NEW lyrics were fetched (local lyrics are used)
@@ -1465,7 +1471,7 @@ export async function matchLyrics(song: LocalSong): Promise<LyricData | null> {
         song.matchedIsPureMusic = processed.isPureMusic;
 
         if (matchContext.metadataCandidate) {
-            await applyMatchedMetadata(song.id, {}, { lyricsOnly: true, songPatch: song });
+            await applyMatchedMetadata(song.id, {}, { lyricsOnly: true, songPatch: song, skipIfMarkedPureMusic: true });
             return processed.lyrics;
         }
 
@@ -1480,6 +1486,7 @@ export async function matchLyrics(song: LocalSong): Promise<LyricData | null> {
         }, {
             songPatch: { ...song, useOnlineCover: Boolean(coverUrl && !hasLocalSongCover(song)) },
             protectOrigins: ['manual', 'manual-match', 'split'],
+            skipIfMarkedPureMusic: true,
         });
         return processed.lyrics;
     } catch (error) {

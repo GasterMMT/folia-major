@@ -7,8 +7,9 @@ import type { LibraryDirectoryBatchController } from './directory';
 import type { LibraryHomeData } from './home';
 import type { LibraryHomeResources } from './homeModel';
 import type { CollectionMutationController } from './mutations';
-import type { LibraryPlaybackPort } from './ports';
+import type { LibraryPlaybackPort, LibraryStageToolsPort } from './ports';
 import type { CollectionResource } from './resource';
+import type { LibrarySuiteChromeActionMeta } from './suiteChrome';
 
 // src/library/core/contracts/suite.ts
 // UI suite 的能力契约：core 定义有哪些 surface、每个 surface 上有哪些动作、宿主交给任何一套 suite 的输入；
@@ -179,6 +180,13 @@ export type LibraryCollectionNavigation = {
     /** album 是界面上已有的专辑摘要（名字、封面、目录引用），track 是触发它的那首歌（在线集合按它解析目录）。 */
     onOpenAlbum: (albumId: number | string, album?: LibraryCatalogLinkHint, track?: SongResult) => void;
     onOpenArtist: (artistId: number | string, artist?: LibraryCatalogLinkHint, track?: SongResult) => void;
+    /**
+     * 跳到导航栈的第 depth 层（面包屑点击）：depth 是保留的层数，与 LibraryNavigationContext.depth 同一种量，
+     * 0 表示整个关掉；不比当前浅时什么都不做；栈里有重复的集合时按位置算。宿主经浏览器历史退回（与浏览器后退同路），
+     * beforeBack 由宿主在弹栈前跑一次，suite 不要自己再跑。打开的专辑 / 歌手（onOpenAlbum / onOpenArtist）正好是上一层时
+     * 同样是一次返回（N1 折叠紧邻往返），更早的层照常压栈。
+     */
+    onPopTo?: (depth: number) => void;
 };
 
 /** 打开专辑 / 歌手时界面上已有的摘要；在线集合的条目原样带着 provider 的字段。 */
@@ -268,6 +276,17 @@ export type LibrarySurfaceDeclaration<Props> = {
     extraActions?: readonly string[];
 };
 
+/**
+ * 导航栈里的一层（面包屑用，B11）：自底向上按位置排列，栈里可以有重复的集合（N1 只折叠紧邻往返）。
+ * key 是那一层的 collectionKey（与浏览会话、层描述的键同一种），name 是打开时描述里的名字（栈顶的名字以 surface
+ * 自己的为准：改名、Navidrome 刷新后的新名字只反映在栈顶）。
+ */
+export type LibraryNavigationCrumb = {
+    readonly key: string;
+    readonly name: string;
+    readonly type: string;
+};
+
 /** 宿主在导航时交给 suite 转场钩子的上下文（导航发生之前读的）。 */
 export type LibraryNavigationContext = {
     /** 导航栈当前深度。 */
@@ -276,6 +295,11 @@ export type LibraryNavigationContext = {
     origin: CollectionNavigationOrigin | null;
     /** 当前顶层集合的类型。 */
     activeType: string | null;
+    /**
+     * 导航栈每一层（B11，面包屑点击跳层用，长度等于 depth）。宿主总会给；缺省（旧的调用方、测试替身）时当作不知道
+     * 中间层的名字。跳层本身走 LibraryCollectionNavigation.onPopTo（depth = 保留的层数，按这里的位置算）。
+     */
+    trail?: readonly LibraryNavigationCrumb[];
 };
 
 /** 背景板单段淡入或淡出的时长（秒）与贝塞尔曲线。 */
@@ -319,6 +343,58 @@ export type LibrarySuiteTransitions = {
     reset?: () => void;
 };
 
+/** 透出的播放页画面（reportPlayerBackdrop）：画不画歌词文字、加不加模糊。 */
+export type LibraryPlayerBackdrop = { readonly lyrics: boolean; readonly blur: boolean };
+
+/**
+ * stage 的输入（B1）。stage 是一套 suite 常驻在首页与集合层之间的舞台（bravais 的整面墙），横跨 surface：
+ * 首页与集合 / 歌手 surface 只把自己的层描述交给 suite 内部的 store，由 stage 统一画出来。
+ * 宿主（GridViewOverlayHost）只挂**当前生效 suite** 的 stage，打开 / 关闭集合不重挂；首页外壳整个卸载时
+ * （播放页全屏后 Home 返回 null）它跟着卸载，所以 stage 要跨卸载保留的布局应放进 sessionStorage 或 store。
+ */
+export type LibrarySuiteStageProps = {
+    /** 首页外壳层的值（不是首页 surface 的值：集合层打开时 stage 仍可交互）。另一层盖在上面时为 false。 */
+    isInteractive: boolean;
+    theme: Theme;
+    isDaylight: boolean;
+    /** 当前集合导航快照（只读）：stage 据此知道「现在是哪一层」，用于转场方向与层栈。首页时 depth 为 0。 */
+    navigation: LibraryNavigationContext;
+    /**
+     * 报告 stage 此刻是否**完全**盖住了下面的播放页（B6b）。报 true 时，首页完全显示（淡入结束）之后宿主卸载
+     * visualizer，不再在墙下面全速渲染；首页被设置弹窗 / 面板盖住、回到播放页或改报 false 时立即重新挂载。
+     * 只有画面完全不透光时才报 true（bravais 的「实色」档）；有任何透光处（窗、半透明材质）必须报 false。
+     * 缺省视为 false。stage 卸载、换 suite 时宿主自动复位为 false，不需要 stage 在卸载时报 false。
+     * 引用在同一次挂载内稳定；值不变时重复报告没有开销。
+     */
+    reportPlayerOcclusion: (occludes: boolean) => void;
+    /**
+     * 报告透出的播放页画面怎么画（bravais「墙后的画面」设置）：`lyrics` 画歌词文字、`blur` 加模糊。宿主只在首页显示着时
+     * 按它调整 visualizer（文字开关、visualizer 那一层的模糊），播放页不受影响。只有画面有透光处时才可能报 true；缺省与
+     * 复位都是两项 false（首页 visualizer 不画文字、不模糊，与没有 stage 的 suite 一样）。引用同一次挂载内稳定。
+     */
+    reportPlayerBackdrop: (backdrop: LibraryPlayerBackdrop) => void;
+    /**
+     * 回到播放页（首页数据的 onBackToPlayer，与网格首页右下角 › 同一个回调）。stage 横跨首页与集合层，所以在这里给，
+     * 而不是只给首页 surface（实测反馈 1）。bravais 左上角的隐藏式返回在首页根层、有正在播放 / 已加载的歌时用它；
+     * 不在根层时那颗按钮是缝里 ‹ 的层返回，不用它。缺省时首页根层不画那颗按钮。
+     */
+    onBackToPlayer?: () => void;
+    /** fb3：暂停 / 继续正在播放的那首（首页数据的 onTogglePlayback）。正在播放的聚焦卡上的播放键用它。缺省时照旧立即播放。 */
+    onTogglePlayback?: () => void;
+    /**
+     * fb3：进入播放视图（首页数据的 onEnterPlaybackView：按「播放后进入的视图」去 Lattice 或播放页，「留在原处」时去播放页）。
+     * 正在播放的聚焦卡上的「进入」按钮用它；缺省时不画那颗按钮。
+     */
+    onEnterPlaybackView?: () => void;
+    /**
+     * 进入 Lattice（首页数据的 onOpenLattice，与首页工具格「队列拼贴」同一个入口；翻牌交接照常发生）。bravais 右下角工具面板的
+     * 「前往 Lattice」用它；缺省时不画那一格。
+     */
+    onOpenLattice?: () => void;
+    /** 墙上工具面板的宿主动作（首页数据的 stageTools：生成主题、队列洗牌、音量预览）。缺省时工具面板不画这几项。 */
+    tools?: LibraryStageToolsPort;
+};
+
 /**
  * suite 自己的布局记录（滚动位置、坐标……，属于 suite，不进 core）。「完成」（返回按钮）时宿主让**每一套** suite
  * 忘掉这一层的记录——不只是正在渲染它的那套：在 TUI 里点了返回，下次在网格里打开也该从头开始。
@@ -338,4 +414,24 @@ export type LibrarySuiteManifest = {
     transitions?: LibrarySuiteTransitions;
     /** 有布局记录的 suite 才给（网格：集合与歌手页的 sessionStorage 记录）。 */
     layout?: LibrarySuiteLayout;
+    /**
+     * 常驻舞台（B1，见 LibrarySuiteStageProps）。只在这套 suite 生效时挂载；渲染当前层的 suite 有 stage 时，宿主不画
+     * 集合层的中性背景板、也不隐藏首页（画面由 stage 负责）。与 transitions.Overlay 不同：Overlay 是每套 suite
+     * 都常驻挂载的转场层，enabled=false 表示「不做转场」；stage 是这套 suite 的画面本身。
+     * 非默认 suite 必须用 React.lazy（没选中它的用户不加载它的 chunk）。
+     */
+    stage?: LibrarySurfaceComponent<LibrarySuiteStageProps>;
+    /**
+     * stage 参与与 Lattice 的翻牌交接：进 / 出 Lattice 时两面墙短暂同时挂着，看起来是同一面墙换了内容。协议是 app 层的
+     * useWallHandoffStore（stage 以「首页墙」登记 peer、按会话阶段合上 / 张开缝与窗、翻出 / 翻进磁贴）。离开 Lattice
+     * 回首页的那一刻 stage 还没挂上，宿主要提前知道该不该让 Lattice 留着等它接手，所以静态声明在这里。缺省为 false：
+     * Lattice 照旧整层淡出（grid / TUI 没有 stage，不声明）。
+     */
+    stageWallHandoff?: boolean;
+    /**
+     * 外观动作（B2，见 ./suiteChrome）：只出现在命令面板里的 suite 自有操作。这里静态声明元数据，命令由命令面板按它
+     * 生成（id 为 `<suiteId>-<动作 id>`）；运行时由 suite 用 useLibrarySuiteChromeRegistration 注册实现，只有注册着的
+     * 那套 suite 的动作可用。不声明则没有外观动作（grid 与 TUI 都不声明：网格的局部动作走 grid surface）。
+     */
+    chromeActions?: readonly LibrarySuiteChromeActionMeta[];
 };

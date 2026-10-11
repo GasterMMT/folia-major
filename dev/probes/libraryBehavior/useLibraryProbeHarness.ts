@@ -12,7 +12,13 @@ import {
 import { buildLocalHomeGroups } from '../../../src/library/core/model/localHomeModel';
 import { getLocalCoverAssetUrl } from '../../../src/services/localCoverAssetUrl';
 import { useLocalLibraryCatalog, type LocalLibraryCatalogSnapshot } from '../../../src/hooks/useLocalLibraryCatalog';
-import { notifyCollectionPop, useCollectionNavigationStore } from '../../../src/stores/useCollectionNavigationStore';
+import {
+    notifyCollectionPop,
+    useCollectionNavigationStore,
+    type CollectionNavigationSnapshot,
+} from '../../../src/stores/useCollectionNavigationStore';
+import { resolveCollectionPopTo } from '../../../src/library/core/model/collectionNavigation';
+import type { CollectionNavigationOrigin } from '../../../src/library/core/contracts/collection';
 import { useOnlineProviderAccountStore } from '../../../src/stores/useOnlineProviderAccountStore';
 import { useLibrarySuiteStore } from '../../../src/library/core/state/useLibrarySuiteStore';
 import { DEFAULT_LIBRARY_SUITE_ID } from '../../../src/library/core/model/librarySuites';
@@ -99,6 +105,25 @@ const popNavigation = () => {
     const next = { ...snapshot, stack: snapshot.stack.slice(0, -1) };
     notifyCollectionPop(next);
     store.restore(next);
+};
+
+// 弹到 to（更浅的一层；null 是整个关掉）：和浏览器后退同一个顺序，先通知再改 store。真实应用里面包屑跳层
+// 走 history.go(-k)，落地后的 popstate 也是这个顺序（见 useAppNavigation 的 traverseCollectionTo）。
+const popNavigationTo = (to: CollectionNavigationSnapshot | null) => {
+    notifyCollectionPop(to);
+    useCollectionNavigationStore.getState().restore(to);
+};
+
+// 压栈（N1 折叠紧邻往返）：要进入的正好是上一层时当作一次返回，与真实应用一致（那里走 backCollection）。
+const pushNavigation = (collection: GridViewCollectionDescriptor) => {
+    const decision = useCollectionNavigationStore.getState().push(collection);
+    if (decision.kind === 'back') popNavigation();
+};
+
+// 面包屑跳层：depth 是保留的层数，0 为整个关掉。
+const popNavigationToDepth = (depth: number) => {
+    const to = resolveCollectionPopTo(useCollectionNavigationStore.getState().snapshot, depth);
+    if (to !== undefined) popNavigationTo(to);
 };
 
 export type LibraryProbeHarness = {
@@ -216,7 +241,7 @@ export const useLibraryProbeHarness = (): LibraryProbeHarness => {
         useCollectionNavigationStore.getState().openRoot(collection, 'home');
     }, []);
     const onPushCollection = useCallback((collection: GridViewCollectionDescriptor) => {
-        useCollectionNavigationStore.getState().push(collection);
+        pushNavigation(collection);
     }, []);
 
     // 把 fixture id 换成首页同款的集合描述：在线走 createOnlineGridViewCollection，本地走 Grid3D 的分组。
@@ -255,7 +280,7 @@ export const useLibraryProbeHarness = (): LibraryProbeHarness => {
         return group ? createLocalGridViewCollection(group) : null;
     }, [localLibraryCatalog, localPlaylists, localSongs, t]);
 
-    const open = useCallback((fixtureId: ProbeFixtureId) => {
+    const open = useCallback((fixtureId: ProbeFixtureId, origin: CollectionNavigationOrigin = 'home') => {
         if (SANDBOX_ONLY.has(fixtureId) && !sandbox) {
             console.warn(`[libraryBehavior] ${fixtureId} needs sandbox mode (?probe=libraryBehavior&sandbox)`);
             return;
@@ -265,8 +290,18 @@ export const useLibraryProbeHarness = (): LibraryProbeHarness => {
             console.warn(`[libraryBehavior] fixture ${fixtureId} is not available yet`);
             return;
         }
-        onOpenCollection(collection);
+        if (origin === 'home') onOpenCollection(collection);
+        else useCollectionNavigationStore.getState().openRoot(collection, origin);
     }, [onOpenCollection, resolveFixture, sandbox]);
+
+    // 从当前集合压入一个 fixture 集合（经 onPushCollection，N1 的规则与真实宿主一致）。
+    const push = useCallback((fixtureId: ProbeFixtureId): boolean => {
+        if (SANDBOX_ONLY.has(fixtureId) && !sandbox) return false;
+        const collection = resolveFixture(fixtureId);
+        if (!collection || !useCollectionNavigationStore.getState().snapshot) return false;
+        onPushCollection(collection);
+        return true;
+    }, [onPushCollection, resolveFixture, sandbox]);
 
     // 从当前集合压入一个本地歌手页（首页同款的分组描述）。用来验证没实现歌手页的 suite 回退到网格；
     // 直接写导航 store，与真实界面里点歌手名之后宿主做的压栈是同一个动作（只是没有转场）。
@@ -300,14 +335,15 @@ export const useLibraryProbeHarness = (): LibraryProbeHarness => {
         return true;
     }, [localLibraryCatalog, localPlaylists, localSongs, onOpenCollection, sandbox, t]);
 
-    const latestRef = useRef({ open, ready, pushArtist, openArtist, refreshLocal });
-    latestRef.current = { open, ready, pushArtist, openArtist, refreshLocal };
+    const latestRef = useRef({ open, ready, push, pushArtist, openArtist, refreshLocal });
+    latestRef.current = { open, ready, push, pushArtist, openArtist, refreshLocal };
     useEffect(() => installLibraryProbeApi({
         sandbox,
         fixtures: () => ALL_FIXTURES,
         ready: () => latestRef.current.ready,
-        open: fixtureId => latestRef.current.open(fixtureId),
+        open: (fixtureId, origin) => latestRef.current.open(fixtureId, origin),
         back: popNavigation,
+        push: fixtureId => latestRef.current.push(fixtureId),
         pushArtist: () => latestRef.current.pushArtist(),
         openArtist: fixtureId => latestRef.current.openArtist(fixtureId),
         refreshLocal: () => latestRef.current.refreshLocal(),
@@ -325,4 +361,8 @@ export const useLibraryProbeHarness = (): LibraryProbeHarness => {
     };
 };
 
-export { popNavigation as onProbeBackCollection };
+export {
+    popNavigation as onProbeBackCollection,
+    pushNavigation as onProbePushCollection,
+    popNavigationToDepth as onProbePopCollectionTo,
+};

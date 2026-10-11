@@ -33,6 +33,8 @@ const createBaseParams = () => {
         playSong: vi.fn(),
         navigateToPlayer: vi.fn(),
         navigateToLattice: vi.fn(),
+        togglePlayback: vi.fn(),
+        enterPlaybackView: vi.fn(),
         refreshOnlineProviderPlaylists: vi.fn().mockResolvedValue(undefined),
         user: null,
         playlists: [],
@@ -87,6 +89,7 @@ const createBaseParams = () => {
         addSongToQueue: vi.fn(),
         onOpenCollection: vi.fn(),
         onPushCollection: vi.fn(),
+        onPopCollectionTo: vi.fn(),
         onBackCollection: vi.fn(),
     };
 };
