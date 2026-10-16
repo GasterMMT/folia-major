@@ -13,6 +13,7 @@ import { initFoliumClients } from './mods/folium/clientLoader';
 import { restoreSavedFoliumSelections } from './mods/folium/missingEntries';
 import { installFoliumCommandPaletteSync } from './mods/folium/commandPaletteSync';
 import { installFoliumHostEvents } from './mods/folium/hostEvents';
+import { installFoliumHomePageDismissal } from './components/app/home/foliumHomePageDismissal';
 import { installLibrarySuiteChromeCommands } from './library/app/installLibrarySuiteChromeCommands';
 import { installNativeDragGuard } from './utils/nativeDragGuard';
 import { bootNavidromeServerPreset } from './services/navidromeServerPreset';
@@ -78,6 +79,8 @@ const bootFolium = async () => {
     if (!isMainApp) return;
     installFoliumCommandPaletteSync();
     installFoliumHostEvents();
+    // 显式打开集合时关掉开着的模组首页页面；与 Home 挂没挂着无关，所以在这里装（见 foliumHomePageDismissal）。
+    installFoliumHomePageDismissal();
     await initFoliumClients();
     restoreSavedFoliumSelections();
 };
@@ -98,5 +101,6 @@ void Promise.allSettled([bootFolium(), bootNavidrome()])
         if (navidrome.status === 'rejected') console.warn('[Navidrome] Server preset boot failed:', navidrome.reason);
     })
     .finally(() => {
-        void initializeLocalCoverRuntime().finally(renderApp);
+        initializeLocalCoverRuntime();
+        renderApp();
     });
