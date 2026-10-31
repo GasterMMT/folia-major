@@ -760,6 +760,7 @@ export default {
       "library-wall-backdrop-blur-toggle": { "title": "墙后画面模糊", "description": "给墙后透出的可视化加模糊" },
       "library-wall-seam-direction-picker": { "title": "选择信息条方向", "description": "信息条竖着开、从块的横向缝隙横着开，或按屏幕形状自动选" },
       "settings-theme-presets": { "title": "预设配色", "description": "直接跳到内置和已保存的预设配色" },
+      "settings-lyric-render-quality": { "title": "歌词画布分辨率与抗锯齿", "description": "直接跳到 canvas / WebGL 歌词样式默认跟随的分辨率和抗锯齿设置" },
       "settings-lyrics-renderer": { "title": "歌词渲染方式", "description": "直接跳到播放器歌词的绘制方式设置" },
       "settings-grid-card-style": { "title": "网格卡片样式", "description": "直接跳到首页网格卡片的绘制样式" },
       "settings-queue-behavior": { "title": "队列行为", "description": "直接跳到播放队列的组建与保留方式" },
@@ -1126,6 +1127,7 @@ export default {
     "queueReplaceUndoGone": "队列在替换之后又改过了，没有可以撤销的替换",
     "queueReplaceHint": "可以一次换掉整个播放队列，并结束私人 FM；替换后会提示是哪个模组换的，在队列再被改动之前可以撤销。",
     "equalizerControlHint": "会改写你的音效设置：可以切换音效预设，或换上它自己的均衡器曲线。",
+    "renderQualityHint": "会改写歌词画布的渲染质量：可以修改「性能与动效」里的歌词画布分辨率与抗锯齿。",
     "signatureVerified": "官方认证",
     "signatureVerifiedDetail": "带有有效的 Folium 官方签名（{{key}}）：来源与内容经过官方审查，签名后未被修改。它启用后仍以应用的完整权限运行。",
     "signatureBeta": "先行测试",
@@ -1729,6 +1731,7 @@ export default {
     "releaseNotes": "版本更新",
     "releaseNotesDescription": "查看这个版本带来的变化",
     "majorUpdateLabel": "{{codename}} Update · 重大更新",
+    "servicePackLabel": "{{codename}} Update SP{{servicePack}} · 重大更新",
     "ponder": "思索帮助页",
     "ponderDescription": "了解 Folia 的基本操作与运行逻辑",
     "version": "版本"
@@ -2851,7 +2854,22 @@ export default {
     "nebbiaSpotX": "聚光灯位置",
     "nebbiaRainHit": "雨点打在玻璃上",
     "nebbiaRainBig": "吐字时的大雨点",
-    "nebbiaResolution": "渲染分辨率",
+    "nebbiaScenery": "窗外显示",
+    "nebbiaSceneryHint": "窗外每样都能单独关掉，全关时只剩天色。光斑是霓虹、路灯和招牌；关掉马路时车灯和光斑也没有倒影。玻璃上的雨点在上面的滑块里调。",
+    "nebbiaScenery_spot": "聚光灯",
+    "nebbiaScenery_buildings": "楼群",
+    "nebbiaScenery_lights": "光斑",
+    "nebbiaScenery_cars": "车灯",
+    "nebbiaScenery_road": "马路",
+    "nebbiaRain": "窗外的雨",
+    "nebbiaRainHint": "窗外的雨只在聚光灯的光柱里、玻璃擦干净的地方看得见；斜着落时随车速倾斜。",
+    "nebbiaRain_slant": "斜着",
+    "nebbiaRain_straight": "竖直",
+    "nebbiaRain_off": "不下",
+    "nebbiaBehind": "窗外",
+    "nebbiaBehindHint": "雨夜街景，或者用共用背景。用背景时雾变成一层半透明的雾（日间主题是白雾、夜间主题是深色的雾），擦开的字透出后面的背景；播放页透明时总是这样，透出的是桌面。",
+    "nebbiaBehind_night": "雨夜街景",
+    "nebbiaBehind_backdrop": "背景",
     "lumiereUnlitOpacity": "未唱字透明度",
     "lumiereWindowNeighbors": "邻行",
     "lumiereWindowNeighborsPrev": "上一行 + 当前行",
@@ -2942,9 +2960,9 @@ export default {
     "machiQualityBalanced": "平衡",
     "machiQualityLow": "低",
     "machiRenderScale": "分辨率",
-    "machiRenderScaleHint": "按屏幕像素的几成来画：低一些会糊一点，但快很多。高 DPI 屏上最多按 2 倍算。",
+    "machiRenderScaleHint": "按屏幕像素的几成来画：低一些会糊一点，但快很多。高 DPI 屏上最多按 2 倍算。跟随全局时用「性能与动效」里的歌词画布分辨率（现在是 {{value}}，高于 1× 按超采样画）。",
     "machiAntialias": "抗锯齿",
-    "machiAntialiasHint": "FXAA 最省，字会略软；SMAA 边缘干净，墨线和雨丝也平滑，代价稍高；超采样按 2 倍分辨率画再缩回来，最细也最贵。",
+    "machiAntialiasHint": "FXAA 最省，字会略软；SMAA 边缘干净，墨线和雨丝也平滑，代价稍高；超采样按 2 倍分辨率画再缩回来，最细也最贵。跟随全局时，全局挡位开着（现在是{{value}}）就是 SMAA，关着就是关。",
     "machiAntialiasOff": "关",
     "machiAntialiasFxaa": "FXAA",
     "machiAntialiasSmaa": "SMAA",
@@ -2959,7 +2977,8 @@ export default {
     "machiGlow": "辉光与光条",
     "machiGlowHint": "夜里灯和招牌晕开的光，以及横向的镜头光条。",
     "machiAdaptive": "自动降级",
-    "machiAdaptiveHint": "帧率长期偏低时，在这套设置之下逐步降低（先关景深的虚化，再降倒影、阴影、辉光，最后才动抗锯齿和分辨率），不会高过你选的。改了设置会从新的这套重新开始。",
+    "machiAdaptiveHint": "帧率长期偏低时，在这套设置之下逐步降低（先关景深的虚化，再退超采样和几何边缘的 MSAA，然后是倒影、辉光、分辨率、后期抗锯齿，阴影最后），不会高过你选的。改了设置会从新的这套重新开始。",
+    "machiAdaptiveActive": "现在已经降了 {{count}} 档。",
     "hanabiFireworksSection": "烟花",
     "hanabiStageSection": "画面",
     "hanabiTextSection": "文字",
@@ -3099,6 +3118,17 @@ export default {
     "gpuPreferenceCommandLineNotice": "这次启动带了显卡参数，以启动参数为准",
     "gpuPreferenceActive": "当前使用",
     "visualizerFrameRateValue": "限制档位",
+    "lyricRenderScale": "歌词画布分辨率",
+    "lyricRenderScaleDesc": "用 canvas / WebGL 画的歌词样式（町景、花火、绘光、雾笺等）按这个倍数渲染，1× 是各样式原来的清晰度；高于 1× 是超采样，边缘更细，也更吃显卡。各样式默认跟随这里，也能在样式自己的设置里单独指定。",
+    "lyricAntialias": "歌词画布抗锯齿",
+    "lyricAntialiasDesc": "自动是各样式自己的默认；打开时几何边缘（线条、卡片、色块）更平滑，代价是显存和一点帧率。各样式默认跟随这里。",
+    "lyricAntialiasAuto": "自动",
+    "lyricAntialiasOn": "开",
+    "lyricAntialiasOff": "关",
+    "lyricRenderSection": "渲染",
+    "lyricRenderFollowGlobal": "跟随全局",
+    "lyricRenderScaleStyleHint": "这个样式按几倍分辨率画，高于 1× 是超采样。跟随全局时用「性能与动效」里的挡位（现在是 {{value}}）。",
+    "lyricAntialiasStyleHint": "跟随全局时用「性能与动效」里的挡位（现在是{{value}}）。",
     "themePresets": "配色主题预设",
     "themePresetsDefault": "墨染 / 素白",
     "openThemePark": "打开主题乐园",
@@ -3591,6 +3621,29 @@ export default {
       "qqPrivatePlaylists": {
         "title": "QQ 音乐不公开歌单",
         "description": "登录后，自己创建的不公开歌单也能读取歌曲，并支持真正的分页加载。自建后端需要升级到 qq-music-api 3.1.2 或更新版本；旧后端会自动回退，读不到时会明确提示「不是公开歌单」，不再静默显示为空。"
+      }
+    },
+    "v0_7_25": {
+      "intro": "欢迎来到 0.7.25「Rainy Update SP1」：这是 0.7.24 的热修复版本，修复了歌词样式「雾笺」的性能问题——切换到它时不再卡住，播放时帧率更高、占用更低；控制页的主题来源切回「默认」时，也会真正换回默认主题。以下仍是 Rainy Update 带来的内容：两个雨夜歌词样式，在起雾的公交车窗上写歌词的「雾笺」，和三维微缩街景「町景」；底部字幕可以排成一到三行，桌面版的遥控窗口也能展开播放队列。",
+      "nebbia": {
+        "title": "雾笺",
+        "description": "新增歌词样式「雾笺」：雨夜的公交车上，手指在起雾的车窗上写下歌词。汉字按笔顺一笔一笔写出来，写过的地方擦出窗外的夜景，水珠沿着笔画聚起、往下淌，雾又慢慢漫回来；街上两束聚光灯跟着正在唱的字。歌词可以手写、慢慢显现或哈一口气再写，消失时慢慢起雾或被手指抹掉；最后一句唱完，玻璃上会写出曲名和歌手。智能动感模式「疏雨轻车」下，雨点跟着人声砸在玻璃上，车跟着底鼓颠簸。"
+      },
+      "machi": {
+        "title": "町景",
+        "description": "新增三维歌词样式「町景」：一座日本小镇的微缩街景，歌词写在镇上的招牌里——当前这句在 LED 大屏上逐字亮起，下一句在滚动字幕条上，歌名挂在店招上，主题的颜色和图标会换上连锁店的招牌。场景有便利店、加油站和城寨酒吧，时间有白天、黄昏和夜里，天气有晴、雨、雪、雾，都可以交给「自动」；下雨时路面湿亮、倒影拉长，副歌开头会打雷。拖动画面可以转视角，每个场景各记一份自定义视角；镜头会缓慢运镜，光圈、对焦和移轴在播放页的取景条里就能调。智能动感模式下霓虹跟着节拍此起彼伏，底鼓在湿地面上荡开涟漪，军鼓处歌词屏慢慢亮起。"
+      },
+      "subtitleRows": {
+        "title": "底部字幕行布局",
+        "description": "底部字幕可以排成单行、双行或三行：单行可选当前句、翻译或罗马音；多行时第一行是当前句，后面每行可选下一句、翻译或罗马音。在歌词样式窗口的字幕设置里调，不再跟着「副字幕内容」走，旧的设置会自动换成对应的布局。两句之间的空档里，字幕停在刚唱完的那句。Lattice 展开的歌曲卡片上也会显示和声字幕。"
+      },
+      "remoteQueue": {
+        "title": "遥控窗口播放队列",
+        "description": "桌面版遥控窗口新增队列按钮，展开后显示播放队列，当前这首居中，可以搜索；每首歌可以点播、下一首播放、移到队尾或移除。窗口按屏幕剩下的空间向下或向上展开，指针离开几秒后自动收起，按 Esc 先清空搜索再收起。"
+      },
+      "moreDetails": {
+        "title": "更多改进",
+        "description": "Bravais 的信息条方向新增「自动（反向）」，横竖屏的选择和「自动」正好相反。「当前播放声卡」现在对经过 Web Audio 的播放同样生效，不会再从系统默认设备出声。汽水的 VIP 歌改播试听片段时，提示改为第三方播放器暂时拿不到完整的 VIP 歌曲；Spotify 不给音频时，提示改为官方限制。登录窗口里鼠标停在平台列表最后一行时，界面不会再变成空白。"
       }
     },
     "v0_7_24": {

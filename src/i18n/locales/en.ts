@@ -760,6 +760,7 @@ export default {
       "library-wall-backdrop-blur-toggle": { "title": "Blur behind the wall", "description": "Blur the visualizer that shows through the wall" },
       "library-wall-seam-direction-picker": { "title": "Pick info strip direction", "description": "Open the info strip as a column, a row across the wall, or by the screen shape" },
       "settings-theme-presets": { "title": "Theme presets", "description": "Jump to the built-in and saved theme presets" },
+      "settings-lyric-render-quality": { "title": "Lyric canvas resolution and anti-aliasing", "description": "Jump to the resolution and anti-aliasing every canvas / WebGL lyric style follows by default" },
       "settings-lyrics-renderer": { "title": "Lyrics renderer", "description": "Jump to how lyrics are drawn on the player" },
       "settings-grid-card-style": { "title": "Grid card style", "description": "Jump to how the home grid draws its cards" },
       "settings-queue-behavior": { "title": "Queue behavior", "description": "Jump to how the play queue is built and kept" },
@@ -1126,6 +1127,7 @@ export default {
     "queueReplaceUndoGone": "The queue has changed since it was replaced, so there is nothing to undo",
     "queueReplaceHint": "Can replace the whole play queue at once and end Personal FM; Folia then says which mod did it, and you can undo it until the queue changes again.",
     "equalizerControlHint": "Changes your sound settings: can switch your sound preset, or put its own equalizer curve in place.",
+    "renderQualityHint": "Changes the lyric canvas render quality: can change the lyric canvas resolution and anti-aliasing in Performance & motion.",
     "signatureVerified": "Verified",
     "signatureVerifiedDetail": "Carries a valid official Folium signature ({{key}}): its source and content were reviewed by Folium and have not changed since signing. Once enabled it still runs with the app's full privileges.",
     "signatureBeta": "Preview",
@@ -1729,6 +1731,7 @@ export default {
     "releaseNotes": "What's new",
     "releaseNotesDescription": "Review the changes in this version",
     "majorUpdateLabel": "{{codename}} Update · Major update",
+    "servicePackLabel": "{{codename}} Update SP{{servicePack}} · Major update",
     "ponder": "Ponder Help",
     "ponderDescription": "Learn Folia's basic controls and operating model",
     "version": "Version"
@@ -2851,7 +2854,22 @@ export default {
     "nebbiaSpotX": "Spotlight position",
     "nebbiaRainHit": "Raindrops on the glass",
     "nebbiaRainBig": "Drops on each word",
-    "nebbiaResolution": "Render resolution",
+    "nebbiaScenery": "Scenery",
+    "nebbiaSceneryHint": "Each part of the view can be turned off on its own; with all off only the sky remains. Bokeh lights are the neon, street lamps and signs; with the road off, car lights and bokeh have no reflections. Raindrops on the glass are set with the sliders above.",
+    "nebbiaScenery_spot": "Spotlights",
+    "nebbiaScenery_buildings": "Buildings",
+    "nebbiaScenery_lights": "Bokeh lights",
+    "nebbiaScenery_cars": "Car lights",
+    "nebbiaScenery_road": "Road",
+    "nebbiaRain": "Rain outside",
+    "nebbiaRainHint": "The rain outside shows only inside the spotlight beams, where the glass is wiped clear; slanted rain leans with the bus speed.",
+    "nebbiaRain_slant": "Slanted",
+    "nebbiaRain_straight": "Straight",
+    "nebbiaRain_off": "Off",
+    "nebbiaBehind": "Outside the window",
+    "nebbiaBehindHint": "The street at night, or the shared background behind the fog. With the background the fog turns into a translucent mist (white with a daylight theme, dark with a night theme) and the wiped strokes show what is behind; a transparent player page always works this way and shows the desktop.",
+    "nebbiaBehind_night": "Night street",
+    "nebbiaBehind_backdrop": "Background",
     "lumiereUnlitOpacity": "Unsung text opacity",
     "lumiereWindowNeighbors": "Neighbouring lines",
     "lumiereWindowNeighborsPrev": "Previous + current",
@@ -2942,9 +2960,9 @@ export default {
     "machiQualityBalanced": "Balanced",
     "machiQualityLow": "Low",
     "machiRenderScale": "Resolution",
-    "machiRenderScaleHint": "Draws at a share of the screen's pixels: lower is a little softer but much faster. On high-DPI screens it counts at most 2× the layout size.",
+    "machiRenderScaleHint": "Draws at a share of the screen's pixels: lower is a little softer but much faster. On high-DPI screens it counts at most 2× the layout size. Follow global uses the lyric canvas resolution in Performance & motion (now {{value}}; above 1× supersamples).",
     "machiAntialias": "Anti-aliasing",
-    "machiAntialiasHint": "FXAA is the cheapest but softens text slightly; SMAA gives clean edges and also smooths the ink lines and rain, at a little more cost; Supersampling draws at twice the resolution and scales down, the finest and the most expensive.",
+    "machiAntialiasHint": "FXAA is the cheapest but softens text slightly; SMAA gives clean edges and also smooths the ink lines and rain, at a little more cost; Supersampling draws at twice the resolution and scales down, the finest and the most expensive. Follow global is SMAA while the global setting is on (now {{value}}) and off while it is off.",
     "machiAntialiasOff": "Off",
     "machiAntialiasFxaa": "FXAA",
     "machiAntialiasSmaa": "SMAA",
@@ -2959,7 +2977,8 @@ export default {
     "machiGlow": "Glow and streaks",
     "machiGlowHint": "The halo around lights and signs at night, and the horizontal lens streaks.",
     "machiAdaptive": "Auto-degrade",
-    "machiAdaptiveHint": "When the frame rate stays low, steps down below these settings (depth-of-field blur first, then reflections, shadows and glow, and only then anti-aliasing and resolution), never above what you chose. Changing a setting starts over from the new one.",
+    "machiAdaptiveHint": "When the frame rate stays low, steps down below these settings (depth-of-field blur first, then supersampling and edge MSAA, then reflections, glow, resolution and post anti-aliasing, shadows last), never above what you chose. Changing a setting starts over from the new one.",
+    "machiAdaptiveActive": "Currently {{count}} step(s) down.",
     "hanabiFireworksSection": "Fireworks",
     "hanabiStageSection": "Stage",
     "hanabiTextSection": "Text",
@@ -3099,6 +3118,17 @@ export default {
     "gpuPreferenceCommandLineNotice": "This launch passed a GPU switch on the command line, which takes precedence",
     "gpuPreferenceActive": "In use",
     "visualizerFrameRateValue": "Limit",
+    "lyricRenderScale": "Lyric canvas resolution",
+    "lyricRenderScaleDesc": "Lyric styles drawn with canvas or WebGL (Machi, Hanabi, Lumiere, Nebbia and others) render at this multiple; 1× is each style's usual sharpness, above 1× supersamples for finer edges at more GPU cost. Every style follows this unless its own settings pick a value.",
+    "lyricAntialias": "Lyric canvas anti-aliasing",
+    "lyricAntialiasDesc": "Auto keeps each style's own default; On smooths geometric edges (lines, cards, blocks of color) at the cost of video memory and a little frame rate. Every style follows this by default.",
+    "lyricAntialiasAuto": "Auto",
+    "lyricAntialiasOn": "On",
+    "lyricAntialiasOff": "Off",
+    "lyricRenderSection": "Rendering",
+    "lyricRenderFollowGlobal": "Follow global",
+    "lyricRenderScaleStyleHint": "How many times the resolution this style draws at; above 1× supersamples. Follow global uses the setting in Performance & motion (now {{value}}).",
+    "lyricAntialiasStyleHint": "Follow global uses the setting in Performance & motion (now {{value}}).",
     "themePresets": "Theme Presets",
     "themePresetsDefault": "Default",
     "openThemePark": "Open Theme Park",
@@ -3591,6 +3621,29 @@ export default {
       "qqPrivatePlaylists": {
         "title": "Private QQ Music Playlists",
         "description": "When signed in, your own private playlists now load their songs, with real paging. Self-hosted backends must run qq-music-api 3.1.2 or later; older backends fall back automatically, and a playlist that cannot be read now says it is not public instead of silently showing as empty."
+      }
+    },
+    "v0_7_25": {
+      "intro": "Welcome to 0.7.25, Rainy Update SP1—a hotfix for 0.7.24 that fixes the performance problems of the Nebbia lyric style: switching to it no longer stalls, and it plays at a higher frame rate with less load. Switching the theme source on the control page back to Default now really restores the default theme, too. Everything else is still the Rainy Update: two rainy-night lyric styles—Nebbia, which writes the lyrics on the fogged-up window of a bus, and Machi, a 3D miniature town; bottom subtitles in one to three rows; and a desktop remote control window that can expand to show the play queue.",
+      "nebbia": {
+        "title": "Nebbia",
+        "description": "New lyric style Nebbia: on a bus on a rainy night, a fingertip writes the lyrics on the fogged-up window. Chinese characters are written stroke by stroke in stroke order, each stroke wiping the fog clear onto the city outside; beads gather along the strokes and run down, the fog slowly creeps back, and two spotlights from the street follow the word being sung. Lines can be handwritten, fade in, or be written after a breath on the glass, and leave by fogging over or being wiped away by a finger; after the last line, the song title and artist are written on the glass. In Smart beat mode, Drizzle Ride makes raindrops hit the glass with the vocals and the bus jolt on the kick drum."
+      },
+      "machi": {
+        "title": "Machi",
+        "description": "New 3D lyric style Machi: miniature dioramas of a Japanese town whose signs carry the lyrics—the current line lights up word by word on an LED screen, the next line runs along an LED ticker, the song title sits on the shop signs, and the theme's colors and icons repaint the chain store. Scenes include a convenience store, a gas station and a walled-city bar; time of day (day, dusk, night) and weather (clear, rain, snow, fog) can each be left on Auto. In the rain the street turns glossy with long reflections, and thunder rolls at the start of each chorus. Drag to turn the view and keep a custom view for each scene; the camera drifts slowly, and aperture, focus and tilt-shift can be adjusted from the framing bar on the player page. In Smart beat mode the neon swells in waves on the beats, kicks ring ripples across the wet ground, and the lyric screen glows up on the snare."
+      },
+      "subtitleRows": {
+        "title": "Subtitle Rows",
+        "description": "The bottom subtitles can be one, two or three rows: a single row shows the current line, the translation or the romanization; with more rows, the first is the current line and each row after it can show the next line, the translation or the romanization. Set it in the lyric style window's subtitle settings—it no longer follows Subtitle Content, and your old setting converts to the matching layout. Between lines, the subtitles stay on the line just sung. Lattice's expanded song card now shows harmony subtitles too."
+      },
+      "remoteQueue": {
+        "title": "Remote Control Queue",
+        "description": "The desktop remote control window gains a queue button that expands it to show the play queue, centered on the current song and searchable; each song can be played, played next, moved to the end or removed. The window expands downward or upward depending on the room left on the screen, folds back a few seconds after the pointer leaves, and Esc clears the search first, then folds it."
+      },
+      "moreDetails": {
+        "title": "More Improvements",
+        "description": "Bravais's info strip direction gains Automatic (reversed), which picks the opposite orientation from Automatic. Current Output Device now also applies to playback that goes through Web Audio, instead of playing from the system default. When a Qishui VIP song falls back to its preview clip, the notice now says third-party players can't get the full VIP song for now; when Spotify won't provide audio, the notice now calls it an official restriction. Hovering the last row of the platform list in the login window no longer blanks the interface."
       }
     },
     "v0_7_24": {

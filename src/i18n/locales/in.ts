@@ -760,6 +760,7 @@ export default {
       "library-wall-backdrop-blur-toggle": { "title": "Buram di balik dinding", "description": "Buramkan visualizer yang tembus di balik dinding" },
       "library-wall-seam-direction-picker": { "title": "Pilih arah strip info", "description": "Buka strip info sebagai kolom, baris melintang dinding, atau menurut bentuk layar" },
       "settings-theme-presets": { "title": "Prasetel tema", "description": "Langsung ke prasetel tema bawaan dan tersimpan" },
+      "settings-lyric-render-quality": { "title": "Resolusi dan anti-aliasing kanvas lirik", "description": "Langsung ke resolusi dan anti-aliasing yang diikuti semua gaya lirik canvas / WebGL secara bawaan" },
       "settings-lyrics-renderer": { "title": "Perender lirik", "description": "Langsung ke pengaturan cara lirik digambar di pemutar" },
       "settings-grid-card-style": { "title": "Gaya kartu kisi", "description": "Langsung ke pengaturan gaya kartu pada kisi beranda" },
       "settings-queue-behavior": { "title": "Perilaku antrean", "description": "Langsung ke pengaturan cara antrean putar dibentuk dan disimpan" },
@@ -1126,6 +1127,7 @@ export default {
     "queueReplaceUndoGone": "Antrean sudah berubah setelah diganti, jadi tidak ada yang bisa diurungkan",
     "queueReplaceHint": "Dapat mengganti seluruh antrean putar sekaligus dan mengakhiri FM Pribadi; Folia lalu memberi tahu mod mana yang melakukannya, dan Anda dapat mengurungkannya selama antrean belum diubah lagi.",
     "equalizerControlHint": "Mengubah pengaturan suara Anda: dapat mengganti preset suara, atau memasang kurva equalizer miliknya sendiri.",
+    "renderQualityHint": "Mengubah kualitas render kanvas lirik: dapat mengubah resolusi dan anti-aliasing kanvas lirik di Performa & gerakan.",
     "signatureVerified": "Terverifikasi",
     "signatureVerifiedDetail": "Memiliki tanda tangan resmi Folium yang valid ({{key}}): sumber dan isinya telah ditinjau Folium dan tidak berubah sejak ditandatangani. Setelah diaktifkan, mod tetap berjalan dengan hak penuh aplikasi.",
     "signatureBeta": "Pratinjau",
@@ -1729,6 +1731,7 @@ export default {
     "releaseNotes": "Yang baru",
     "releaseNotesDescription": "Lihat perubahan pada versi ini",
     "majorUpdateLabel": "{{codename}} Update · Pembaruan besar",
+    "servicePackLabel": "{{codename}} Update SP{{servicePack}} · Pembaruan besar",
     "ponder": "Ponder Bantuan",
     "ponderDescription": "Pelajari kontrol dasar dan cara kerja Folia",
     "version": "Versi"
@@ -2806,7 +2809,22 @@ export default {
     "nebbiaSpotX": "Posisi lampu sorot",
     "nebbiaRainHit": "Tetes hujan di kaca",
     "nebbiaRainBig": "Tetes besar tiap kata",
-    "nebbiaResolution": "Resolusi render",
+    "nebbiaScenery": "Pemandangan",
+    "nebbiaSceneryHint": "Setiap bagian pemandangan bisa dimatikan sendiri; jika semua mati hanya langit yang tersisa. Bokeh adalah neon, lampu jalan, dan papan nama; jika jalan dimatikan, lampu mobil dan bokeh tidak punya pantulan. Tetesan hujan di kaca diatur dengan penggeser di atas.",
+    "nebbiaScenery_spot": "Lampu sorot",
+    "nebbiaScenery_buildings": "Gedung",
+    "nebbiaScenery_lights": "Bokeh",
+    "nebbiaScenery_cars": "Lampu mobil",
+    "nebbiaScenery_road": "Jalan",
+    "nebbiaRain": "Hujan di luar",
+    "nebbiaRainHint": "Hujan di luar hanya terlihat di dalam sorotan lampu sorot, di bagian kaca yang sudah diusap bersih; hujan miring condong mengikuti kecepatan bus.",
+    "nebbiaRain_slant": "Miring",
+    "nebbiaRain_straight": "Tegak",
+    "nebbiaRain_off": "Mati",
+    "nebbiaBehind": "Di luar jendela",
+    "nebbiaBehindHint": "Jalanan malam berhujan, atau latar bersama. Dengan latar, kabut menjadi lapisan tembus pandang (putih dengan tema siang, gelap dengan tema malam) dan goresan yang diusap memperlihatkan latar di belakangnya; halaman pemutar transparan selalu begini dan memperlihatkan desktop.",
+    "nebbiaBehind_night": "Jalanan malam",
+    "nebbiaBehind_backdrop": "Latar",
     "lumiereUnlitOpacity": "Opasitas teks yang belum dinyanyikan",
     "lumiereWindowNeighbors": "Baris sekitar",
     "lumiereWindowNeighborsPrev": "Sebelumnya + saat ini",
@@ -2942,9 +2960,9 @@ export default {
     "machiQualityBalanced": "Seimbang",
     "machiQualityLow": "Rendah",
     "machiRenderScale": "Resolusi",
-    "machiRenderScaleHint": "Menggambar dengan sebagian piksel layar: lebih rendah sedikit lebih lembut tetapi jauh lebih cepat. Di layar DPI tinggi paling banyak dihitung 2× ukuran tata letak.",
+    "machiRenderScaleHint": "Menggambar dengan sebagian piksel layar: lebih rendah sedikit lebih lembut tetapi jauh lebih cepat. Di layar DPI tinggi paling banyak dihitung 2× ukuran tata letak. Ikuti global memakai resolusi kanvas lirik di Performa & gerakan (sekarang {{value}}; di atas 1× melakukan supersampling).",
     "machiAntialias": "Anti-aliasing",
-    "machiAntialiasHint": "FXAA paling hemat tetapi sedikit melunakkan teks; SMAA memberi tepi yang bersih dan juga menghaluskan garis tinta serta hujan, dengan biaya sedikit lebih besar; Supersampling menggambar dengan resolusi dua kali lalu diperkecil, paling halus dan paling mahal.",
+    "machiAntialiasHint": "FXAA paling hemat tetapi sedikit melunakkan teks; SMAA memberi tepi yang bersih dan juga menghaluskan garis tinta serta hujan, dengan biaya sedikit lebih besar; Supersampling menggambar dengan resolusi dua kali lalu diperkecil, paling halus dan paling mahal. Ikuti global berarti SMAA selama pengaturan global aktif (sekarang {{value}}) dan mati saat global mati.",
     "machiAntialiasOff": "Mati",
     "machiAntialiasFxaa": "FXAA",
     "machiAntialiasSmaa": "SMAA",
@@ -2959,7 +2977,8 @@ export default {
     "machiGlow": "Pendar dan kilau lensa",
     "machiGlowHint": "Pendar di sekitar lampu dan papan nama pada malam hari, serta kilau lensa mendatar.",
     "machiAdaptive": "Turunkan otomatis",
-    "machiAdaptiveHint": "Jika frame rate terus rendah, kualitas diturunkan bertahap di bawah pengaturan ini (blur kedalaman bidang dulu, lalu pantulan, bayangan, dan pendar, baru kemudian anti-aliasing dan resolusi), tidak pernah melebihi pilihanmu. Mengubah pengaturan memulai lagi dari yang baru.",
+    "machiAdaptiveHint": "Jika frame rate terus rendah, kualitas diturunkan bertahap di bawah pengaturan ini (blur kedalaman bidang dulu, lalu supersampling dan MSAA tepi, kemudian pantulan, pendar, resolusi, dan anti-aliasing akhir, bayangan paling akhir), tidak pernah melebihi pilihanmu. Mengubah pengaturan memulai lagi dari yang baru.",
+    "machiAdaptiveActive": "Saat ini turun {{count}} tingkat.",
     "hanabiFireworksSection": "Kembang api",
     "hanabiStageSection": "Panggung",
     "hanabiTextSection": "Teks",
@@ -3099,6 +3118,17 @@ export default {
     "gpuPreferenceCommandLineNotice": "Peluncuran ini memakai parameter GPU di baris perintah, yang lebih diutamakan",
     "gpuPreferenceActive": "Sedang dipakai",
     "visualizerFrameRateValue": "Batas",
+    "lyricRenderScale": "Resolusi kanvas lirik",
+    "lyricRenderScaleDesc": "Gaya lirik yang digambar dengan canvas atau WebGL (Machi, Hanabi, Lumiere, Nebbia, dan lainnya) dirender pada kelipatan ini; 1× adalah ketajaman bawaan tiap gaya, di atas 1× melakukan supersampling untuk tepi lebih halus dengan beban GPU lebih besar. Setiap gaya mengikuti ini kecuali pengaturannya sendiri memilih nilai lain.",
+    "lyricAntialias": "Anti-aliasing kanvas lirik",
+    "lyricAntialiasDesc": "Otomatis memakai bawaan tiap gaya; Aktif menghaluskan tepi geometris (garis, kartu, blok warna) dengan biaya memori video dan sedikit laju bingkai. Setiap gaya mengikuti ini secara bawaan.",
+    "lyricAntialiasAuto": "Otomatis",
+    "lyricAntialiasOn": "Aktif",
+    "lyricAntialiasOff": "Mati",
+    "lyricRenderSection": "Rendering",
+    "lyricRenderFollowGlobal": "Ikuti global",
+    "lyricRenderScaleStyleHint": "Berapa kali resolusi gaya ini digambar; di atas 1× melakukan supersampling. Ikuti global memakai pengaturan di Performa & gerakan (sekarang {{value}}).",
+    "lyricAntialiasStyleHint": "Ikuti global memakai pengaturan di Performa & gerakan (sekarang {{value}}).",
     "themePresets": "Preset Tema",
     "themePresetsDefault": "Bawaan",
     "openThemePark": "Buka Taman Tema",
@@ -3591,6 +3621,29 @@ export default {
       "qqPrivatePlaylists": {
         "title": "Playlist Pribadi QQ Music",
         "description": "Setelah masuk, playlist pribadi buatan Anda kini dapat memuat lagu dengan paging sungguhan. Backend yang di-host sendiri harus memakai qq-music-api 3.1.2 atau lebih baru; backend lama beralih otomatis, dan playlist yang tidak dapat dibaca kini menjelaskan bahwa playlist itu tidak publik, alih-alih tampil kosong tanpa keterangan."
+      }
+    },
+    "v0_7_25": {
+      "intro": "Selamat datang di 0.7.25, Rainy Update SP1—perbaikan cepat untuk 0.7.24 yang memperbaiki masalah performa gaya lirik Nebbia: beralih ke gaya ini tidak lagi tersendat, dan saat diputar frame rate-nya lebih tinggi dengan beban lebih ringan. Mengembalikan sumber tema di halaman kontrol ke Default kini benar-benar memulihkan tema default. Selebihnya tetap isi Rainy Update: dua gaya lirik bertema malam hujan—Nebbia, yang menulis lirik di jendela bus yang berembun, dan Machi, sebuah kota miniatur 3D; subtitle bawah dalam satu sampai tiga baris; dan jendela remote di desktop yang bisa dibentangkan untuk menampilkan antrean putar.",
+      "nebbia": {
+        "title": "Nebbia",
+        "description": "Gaya lirik baru Nebbia: di dalam bus pada malam hujan, ujung jari menuliskan lirik di jendela yang berembun. Aksara Tionghoa ditulis goresan demi goresan sesuai urutan goresannya, setiap goresan menghapus embun hingga tampak kota di luar; butiran air berkumpul di sepanjang goresan lalu mengalir turun, embun perlahan kembali, dan dua lampu sorot dari jalan mengikuti kata yang sedang dinyanyikan. Baris bisa ditulis tangan, muncul perlahan, atau ditulis setelah kaca dihembus napas, lalu hilang dengan berembun kembali atau diusap jari; setelah baris terakhir, judul lagu dan artisnya ditulis di kaca. Dalam mode ketukan pintar, Gerimis Perjalanan membuat tetes hujan mengenai kaca mengikuti vokal dan bus terguncang mengikuti kick drum."
+      },
+      "machi": {
+        "title": "Machi",
+        "description": "Gaya lirik 3D baru Machi: diorama miniatur sebuah kota Jepang yang papan-papannya membawa lirik—baris saat ini menyala kata demi kata di layar LED, baris berikutnya berjalan di ticker LED, judul lagu terpasang di papan toko, dan warna serta ikon tema mengecat ulang toko jaringannya. Adegannya ada toko serba ada, pom bensin, dan bar kota bertembok; waktu (siang, senja, malam) dan cuaca (cerah, hujan, salju, kabut) masing-masing bisa dibiarkan Otomatis. Saat hujan, jalan tampak basah mengilap dengan pantulan memanjang, dan guntur terdengar di awal setiap reff. Seret untuk memutar pandangan dan simpan pandangan khusus untuk setiap adegan; kamera bergerak perlahan, dan bukaan, fokus, serta tilt-shift bisa diatur dari bilah pembingkaian di halaman pemutar. Dalam mode ketukan pintar, neon berpendar bergelombang mengikuti ketukan, kick memancarkan riak di atas tanah basah, dan layar lirik menyala perlahan pada snare."
+      },
+      "subtitleRows": {
+        "title": "Baris Subtitle",
+        "description": "Subtitle bawah bisa terdiri dari satu, dua, atau tiga baris: satu baris menampilkan baris saat ini, terjemahan, atau romanisasi; dengan lebih banyak baris, baris pertama adalah baris saat ini dan setiap baris setelahnya bisa menampilkan baris berikutnya, terjemahan, atau romanisasi. Atur di pengaturan subtitle pada jendela gaya lirik—tidak lagi mengikuti Konten Subtitle, dan pengaturan lama otomatis diubah ke tata letak yang sesuai. Di jeda antarbaris, subtitle tetap pada baris yang baru dinyanyikan. Kartu lagu Lattice yang dibentangkan kini juga menampilkan subtitle harmoni."
+      },
+      "remoteQueue": {
+        "title": "Antrean di Jendela Remote",
+        "description": "Jendela remote di desktop mendapat tombol antrean yang membentangkannya untuk menampilkan antrean putar, dengan lagu saat ini di tengah dan bisa dicari; setiap lagu bisa diputar, diputar berikutnya, dipindah ke akhir, atau dihapus. Jendela membentang ke bawah atau ke atas sesuai ruang yang tersisa di layar, menutup kembali beberapa detik setelah penunjuk pergi, dan Esc mengosongkan pencarian dulu, lalu menutupnya."
+      },
+      "moreDetails": {
+        "title": "Peningkatan Lainnya",
+        "description": "Arah strip info Bravais mendapat Otomatis (terbalik), yang memilih orientasi kebalikan dari Otomatis. Perangkat Output Saat Ini kini juga berlaku untuk pemutaran yang melalui Web Audio, tidak lagi berbunyi dari perangkat bawaan sistem. Saat lagu VIP Qishui beralih ke cuplikan pratinjau, pemberitahuannya kini menyebut pemutar pihak ketiga untuk sementara tidak bisa mendapatkan lagu VIP lengkap; saat Spotify tidak memberikan audio, pemberitahuannya kini menyebutnya batasan resmi. Mengarahkan penunjuk ke baris terakhir daftar platform di jendela login tidak lagi membuat antarmuka kosong."
       }
     },
     "v0_7_24": {

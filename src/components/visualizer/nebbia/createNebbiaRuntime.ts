@@ -1,4 +1,5 @@
-import type { Theme } from '../../../types';
+import type { LyricRenderScale, Theme } from '../../../types';
+import { resolveLyricPixelRatio } from '../../../utils/lyricRenderQuality';
 import { loadLucideIcons, resolveLucideIconNames } from '../../../services/lucideIconResolver';
 import { resolveThemeFontStack, resolveThemeFontWeight } from '../../../utils/fontStacks';
 import { buildNebbiaLines, collectEmojiIcons, NEBBIA_DEFAULT_DOODLES } from './nebbiaChars';
@@ -23,7 +24,7 @@ import { NebbiaSceneClock } from './nebbiaSceneClock';
 // src/components/visualizer/nebbia/createNebbiaRuntime.ts
 // 雾笺的运行时：一块画布、一个 WebGL2 上下文，自己的 rAF 循环。React 外壳把歌、tuning、主题、暂停推进来，
 // 每帧的播放时间和人声能量只在循环里读，不进 React state。暂停时不跑循环，只在需要时补画一帧；
-// 静态模式照常跟着歌词写字，窗外按车速匀速走，但不颠簸、没有小雨点。
+// 静态模式照常跟着歌词写字，窗外按车速匀速走，但不颠簸、没有小雨点。着色器在后台编（nebbiaPrograms.ts），编好之前循环空转、不画。
 
 // 改了要重排整首的 tuning 项
 const LAYOUT_KEYS: (keyof NebbiaTuning)[] = ['appear', 'fade', 'layouts', 'credits', 'jitter', 'warp', 'hold', 'refog', 'writeSpeed', 'doodle'];
@@ -51,6 +52,8 @@ export class NebbiaRuntime {
     private theme: Theme;
     private tuning: NebbiaTuning;
     private fontScale = 1;
+    /** 分辨率倍数（#929）：外壳从全局挡位和 tuning.render 合出来，预览时是 1。 */
+    private renderScale: LyricRenderScale;
     private showText = true;
     private paused = false;
     private still = false;
@@ -61,17 +64,21 @@ export class NebbiaRuntime {
     private dead = false;
     /** 主题字体上次看时是否已加载：从没加载变成加载了，骨架才要重追。 */
     private fontReady = true;
+    /** 建运行时的时刻和着色器编好是否已记日志：看预热有没有命中缓存。 */
+    private readonly startedAt = performance.now();
+    private shadersLogged = false;
 
-    constructor(private readonly input: NebbiaRuntimeInput, theme: Theme, tuning: NebbiaTuning) {
+    constructor(private readonly input: NebbiaRuntimeInput, theme: Theme, tuning: NebbiaTuning, renderScale: LyricRenderScale = 1) {
         this.theme = theme;
         this.tuning = tuning;
+        this.renderScale = renderScale;
         // setTuning 只在 tuning 变了才调：上下文恢复后重建的运行时要自己带上颠簸强度
         this.motion.bump = tuning.bump;
         this.canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
         this.glyphs = new NebbiaGlyphCache(resolveThemeFontStack(theme), resolveThemeFontWeight(theme, 600));
         input.host.appendChild(this.canvas);
         try {
-            this.gl = new NebbiaGl(this.canvas);
+            this.gl = new NebbiaGl(this.canvas, input.seeThrough);
             this.gl.onSpriteReady = () => this.requestFrame();
             this.canvas.addEventListener('webglcontextlost', this.handleContextLost);
             this.canvas.addEventListener('webglcontextrestored', this.handleContextRestored);
@@ -103,6 +110,8 @@ export class NebbiaRuntime {
     }
     setFontScale(scale: number) { if (scale !== this.fontScale) { this.fontScale = scale; this.rebuild(); } }
     setShowText(show: boolean) { if (show !== this.showText) { this.showText = show; this.rebuild(); } }
+    /** 透明时雾的颜色跟主题日夜：日间乳白，夜间深色（像夜里起雾的车窗）。 */
+    setDaylight(daylight: boolean) { this.gl.mistTint = daylight ? [0.86, 0.89, 0.92] : [0.07, 0.08, 0.1]; this.requestFrame(); }
 
     // 只改配色时只换调色板；字体或涂鸦图标变了才重排整首
     setTheme(theme: Theme) {
@@ -119,9 +128,15 @@ export class NebbiaRuntime {
         const prev = this.tuning;
         this.tuning = tuning;
         this.motion.bump = tuning.bump;
-        if (prev.resolution !== tuning.resolution) this.resize();
         if (LAYOUT_KEYS.some(k => !sameValue(prev[k], tuning[k]))) this.rebuild();
         this.requestFrame();
+    }
+
+    /** 分辨率倍数变了：就地换画布和缓冲的尺寸，不重建上下文。 */
+    setRenderScale(scale: LyricRenderScale) {
+        if (scale === this.renderScale) return;
+        this.renderScale = scale;
+        this.resize();
     }
 
     setPlayback(paused: boolean, still: boolean) {
@@ -175,12 +190,14 @@ export class NebbiaRuntime {
     }
 
     private resize() {
-        const rect = this.input.host.getBoundingClientRect();
-        if (rect.width < 1 || rect.height < 1) return;
-        const sized = Math.round(rect.width) !== this.W || Math.round(rect.height) !== this.H;
-        this.W = Math.round(rect.width);
-        this.H = Math.round(rect.height);
-        const dpr = Math.min(2, window.devicePixelRatio || 1) * this.tuning.resolution;
+        // 量排版尺寸，不量 getBoundingClientRect：样式小图和样式窗口的大样张把窗口大的舞台缩小了画（preview/previewScale.ts），
+        // 量到缩小后的尺寸，整首就排在小画布上，字小到笔画宽度被 8 像素的下限盖过，调笔画粗细看不出变化（#963）
+        const { clientWidth: width, clientHeight: height } = this.input.host;
+        if (width < 1 || height < 1) return;
+        const sized = width !== this.W || height !== this.H;
+        this.W = width;
+        this.H = height;
+        const dpr = resolveLyricPixelRatio(Math.min(2, window.devicePixelRatio || 1), this.renderScale);
         this.gl.resize(this.W, this.H, dpr);
         this.mask.resize(this.W, this.H);
         if (sized) {
@@ -212,10 +229,31 @@ export class NebbiaRuntime {
         this.hits.buildBig(this.laid, this.words, this.W, this.H, this.vocalEnv);
     }
 
+    // 着色器编好了没有：没编好下一帧再问（暂停时也问，编好补画第一帧）；编不过就和上下文丢了一样，外壳退回只显示当前这句
+    private shadersReady(): boolean {
+        try {
+            if (this.gl.ready) {
+                if (!this.shadersLogged) {
+                    this.shadersLogged = true;
+                    console.info(`[Nebbia] shaders ready ${Math.round(performance.now() - this.startedAt)} ms after start`);
+                }
+                return true;
+            }
+        } catch (error) {
+            console.warn('[Nebbia] shaders failed to build', error);
+            this.dead = true;
+            this.input.onFailed();
+            return false;
+        }
+        this.raf = requestAnimationFrame(this.frame);
+        return false;
+    }
+
     private frame = () => {
         this.raf = 0;
+        if (this.dead || this.gl.isContextLost || !this.shadersReady()) return;
         // 宿主还没尺寸（隐藏、0 大小）时不画，也不报首帧；有尺寸后 resize 会补一帧
-        if (this.dead || this.gl.isContextLost || !this.W || !this.H) return;
+        if (!this.W || !this.H) return;
         const now = performance.now() / 1000;
         const frozen = this.paused || this.still;
         const dt = this.clock.tick(now, this.paused);
@@ -233,7 +271,7 @@ export class NebbiaRuntime {
         this.hits.advance(T, e, this.still ? 0 : t.rainHit * vocalStrength, NebbiaHits.lifeOf(t.refog, NEBBIA_FIXED.beadHold), this.W, this.H);
         this.mask.draw(this.laid, T, now, t, this.motion, this.hits, t.rainBig * vocalStrength);
         this.spot.update(this.laid, T, dt);
-        this.gl.render(this.mask.canvas, this.mask.breath.active ? this.mask.breath.canvas : null, this.motion.drops, this.motion.fieldInstances(this.fieldInst, t.busSpeed),
+        this.gl.render(this.mask.ctx, this.mask.breath.active ? this.mask.breath.canvas : null, this.motion.drops, this.motion.fieldInstances(this.fieldInst, t.busSpeed),
             nebbiaFrameUniforms(t, this.motion.shake(), this.spot, this.W, this.H, this.clock.time));
         if (!this.firstDrawn) { this.firstDrawn = true; this.input.onFirstFrame(); }
         if (!this.paused) this.raf = requestAnimationFrame(this.frame);

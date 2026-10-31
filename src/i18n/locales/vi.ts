@@ -760,6 +760,7 @@ export default {
       "library-wall-backdrop-blur-toggle": { "title": "Làm mờ nền sau thư viện", "description": "Làm mờ hiệu ứng thị giác hiển thị phía sau thư viện" },
       "library-wall-seam-direction-picker": { "title": "Chọn hướng dải thông tin", "description": "Mở dải thông tin dưới dạng cột dọc, hàng ngang trên tường, hoặc theo hình dáng màn hình" },
       "settings-theme-presets": { "title": "Chủ đề cài sẵn", "description": "Đi tới các chủ đề cài sẵn và đã lưu" },
+      "settings-lyric-render-quality": { "title": "Độ phân giải và khử răng cưa khung lời bài hát", "description": "Đi tới độ phân giải và khử răng cưa mà mọi kiểu lời bài hát canvas / WebGL mặc định làm theo" },
       "settings-lyrics-renderer": { "title": "Trình kết xuất lời bài hát", "description": "Đi tới cách hiển thị lời bài hát trên trình phát" },
       "settings-grid-card-style": { "title": "Kiểu thẻ lưới", "description": "Đi tới cách hiển thị thẻ lưới trên trang chủ" },
       "settings-queue-behavior": { "title": "Hành vi hàng đợi", "description": "Đi tới cách tạo và lưu giữ hàng đợi phát" },
@@ -1126,6 +1127,7 @@ export default {
     "queueReplaceUndoGone": "Hàng đợi đã thay đổi kể từ khi bị thay thế, không còn gì để hoàn tác",
     "queueReplaceHint": "Có thể thay thế toàn bộ hàng đợi phát cùng lúc và kết thúc FM cá nhân; Folia sẽ thông báo mod nào đã thực hiện và bạn có thể hoàn tác cho đến khi hàng đợi thay đổi.",
     "equalizerControlHint": "Thay đổi cài đặt âm thanh của bạn: có thể đổi cấu hình âm thanh sẵn có hoặc áp dụng đường cong bộ cân bằng riêng.",
+    "renderQualityHint": "Thay đổi chất lượng kết xuất khung lời bài hát: có thể thay đổi độ phân giải và khử răng cưa của khung lời bài hát trong Hiệu năng & Hoạt họa.",
     "signatureVerified": "Đã xác minh",
     "signatureVerifiedDetail": "Mang chữ ký Folium chính thức hợp lệ ({{key}}): nguồn và nội dung đã được Folium kiểm duyệt và không bị thay đổi sau khi ký. Khi bật vẫn chạy với toàn quyền ứng dụng.",
     "signatureBeta": "Bản thử nghiệm sớm (Beta)",
@@ -1729,6 +1731,7 @@ export default {
     "releaseNotes": "Có gì mới",
     "releaseNotesDescription": "Xem các thay đổi trong phiên bản này",
     "majorUpdateLabel": "Cập nhật {{codename}} · Bản cập nhật lớn",
+    "servicePackLabel": "Cập nhật {{codename}} SP{{servicePack}} · Bản cập nhật lớn",
     "ponder": "Trợ giúp Khám phá",
     "ponderDescription": "Tìm hiểu thao tác cơ bản và cơ chế vận hành của Folia",
     "version": "phiên bản"
@@ -2851,7 +2854,22 @@ export default {
     "nebbiaSpotX": "Vị trí đèn rọi",
     "nebbiaRainHit": "Giọt mưa trên kính",
     "nebbiaRainBig": "Giọt lớn mỗi từ",
-    "nebbiaResolution": "Độ phân giải kết xuất",
+    "nebbiaScenery": "Cảnh bên ngoài",
+    "nebbiaSceneryHint": "Mỗi phần của cảnh có thể tắt riêng; tắt hết thì chỉ còn bầu trời. Đốm sáng là đèn neon, đèn đường và biển hiệu; tắt mặt đường thì đèn xe và đốm sáng không còn bóng phản chiếu. Giọt mưa trên kính được chỉnh bằng các thanh trượt ở trên.",
+    "nebbiaScenery_spot": "Đèn rọi",
+    "nebbiaScenery_buildings": "Tòa nhà",
+    "nebbiaScenery_lights": "Đốm sáng",
+    "nebbiaScenery_cars": "Đèn xe",
+    "nebbiaScenery_road": "Mặt đường",
+    "nebbiaRain": "Mưa bên ngoài",
+    "nebbiaRainHint": "Mưa bên ngoài chỉ thấy trong luồng đèn rọi, ở chỗ kính đã được lau sạch; mưa xiên nghiêng theo tốc độ xe.",
+    "nebbiaRain_slant": "Xiên",
+    "nebbiaRain_straight": "Thẳng",
+    "nebbiaRain_off": "Tắt",
+    "nebbiaBehind": "Ngoài cửa sổ",
+    "nebbiaBehindHint": "Phố đêm mưa, hoặc dùng nền chung. Khi dùng nền, sương thành một lớp mờ bán trong suốt (trắng với chủ đề ban ngày, tối với chủ đề ban đêm) và nét chữ đã lau để lộ nền phía sau; khi trang phát trong suốt thì luôn như vậy và lộ ra màn hình nền.",
+    "nebbiaBehind_night": "Phố đêm mưa",
+    "nebbiaBehind_backdrop": "Nền",
     "lumiereUnlitOpacity": "Độ mờ chữ chưa hát",
     "lumiereWindowNeighbors": "Dòng lân cận",
     "lumiereWindowNeighborsPrev": "Dòng trước + hiện tại",
@@ -2942,9 +2960,9 @@ export default {
     "machiQualityBalanced": "Cân bằng",
     "machiQualityLow": "Thấp",
     "machiRenderScale": "Độ phân giải",
-    "machiRenderScaleHint": "Vẽ theo một phần số điểm ảnh của màn hình: thấp hơn thì hơi mềm nhưng nhanh hơn nhiều. Trên màn hình DPI cao tối đa tính 2× kích thước bố cục.",
+    "machiRenderScaleHint": "Vẽ theo một phần số điểm ảnh của màn hình: thấp hơn thì hơi mềm nhưng nhanh hơn nhiều. Trên màn hình DPI cao tối đa tính 2× kích thước bố cục. Theo cài đặt chung dùng độ phân giải khung lời bài hát trong Hiệu năng & Hoạt họa (hiện là {{value}}; trên 1× là siêu lấy mẫu).",
     "machiAntialias": "Khử răng cưa",
-    "machiAntialiasHint": "FXAA nhẹ nhất nhưng làm chữ hơi mềm; SMAA cho cạnh sạch và làm mượt cả nét mực lẫn mưa, tốn hơn một chút; Siêu lấy mẫu vẽ ở độ phân giải gấp đôi rồi thu nhỏ, mịn nhất và cũng tốn nhất.",
+    "machiAntialiasHint": "FXAA nhẹ nhất nhưng làm chữ hơi mềm; SMAA cho cạnh sạch và làm mượt cả nét mực lẫn mưa, tốn hơn một chút; Siêu lấy mẫu vẽ ở độ phân giải gấp đôi rồi thu nhỏ, mịn nhất và cũng tốn nhất. Theo cài đặt chung là SMAA khi cài đặt chung đang bật (hiện là {{value}}) và tắt khi nó tắt.",
     "machiAntialiasOff": "Tắt",
     "machiAntialiasFxaa": "FXAA",
     "machiAntialiasSmaa": "SMAA",
@@ -2959,7 +2977,8 @@ export default {
     "machiGlow": "Quầng sáng và vệt sáng",
     "machiGlowHint": "Quầng sáng quanh đèn và biển hiệu vào ban đêm, cùng các vệt sáng ống kính nằm ngang.",
     "machiAdaptive": "Tự giảm chất lượng",
-    "machiAdaptiveHint": "Khi tốc độ khung hình thấp kéo dài, giảm dần dưới các thiết lập này (làm mờ độ sâu trường ảnh trước, rồi phản chiếu, bóng đổ, quầng sáng, sau cùng mới đến khử răng cưa và độ phân giải), không bao giờ cao hơn lựa chọn của bạn. Đổi thiết lập sẽ bắt đầu lại từ thiết lập mới.",
+    "machiAdaptiveHint": "Khi tốc độ khung hình thấp kéo dài, giảm dần dưới các thiết lập này (làm mờ độ sâu trường ảnh trước, rồi siêu lấy mẫu và MSAA ở cạnh, sau đó phản chiếu, quầng sáng, độ phân giải và khử răng cưa hậu kỳ, bóng đổ sau cùng), không bao giờ cao hơn lựa chọn của bạn. Đổi thiết lập sẽ bắt đầu lại từ thiết lập mới.",
+    "machiAdaptiveActive": "Hiện đã giảm {{count}} bậc.",
     "hanabiFireworksSection": "Pháo hoa",
     "hanabiStageSection": "Sân khấu & Khung cảnh",
     "hanabiTextSection": "Văn bản lời bài hát",
@@ -3099,6 +3118,17 @@ export default {
     "gpuPreferenceCommandLineNotice": "Lần khởi chạy này đã truyền tham số GPU qua dòng lệnh, tham số này được ưu tiên",
     "gpuPreferenceActive": "Đang dùng",
     "visualizerFrameRateValue": "Giới hạn",
+    "lyricRenderScale": "Độ phân giải khung lời bài hát",
+    "lyricRenderScaleDesc": "Các kiểu lời bài hát vẽ bằng canvas hoặc WebGL (Machi, Hanabi, Lumiere, Nebbia và các kiểu khác) hiển thị theo bội số này; 1× là độ sắc nét thường ngày của từng kiểu, trên 1× là siêu lấy mẫu cho cạnh mịn hơn nhưng tốn GPU hơn. Mọi kiểu đều theo cài đặt này trừ khi cài đặt riêng của kiểu đó chọn giá trị khác.",
+    "lyricAntialias": "Khử răng cưa khung lời bài hát",
+    "lyricAntialiasDesc": "Tự động giữ mặc định của từng kiểu; Bật làm mịn các cạnh hình học (đường nét, thẻ, mảng màu) đổi lại tốn bộ nhớ video và một chút tốc độ khung hình. Mọi kiểu mặc định theo cài đặt này.",
+    "lyricAntialiasAuto": "Tự động",
+    "lyricAntialiasOn": "Bật",
+    "lyricAntialiasOff": "Tắt",
+    "lyricRenderSection": "Kết xuất",
+    "lyricRenderFollowGlobal": "Theo cài đặt chung",
+    "lyricRenderScaleStyleHint": "Kiểu này vẽ ở bao nhiêu lần độ phân giải; trên 1× là siêu lấy mẫu. Theo cài đặt chung dùng giá trị trong Hiệu năng & Hoạt họa (hiện là {{value}}).",
+    "lyricAntialiasStyleHint": "Theo cài đặt chung dùng giá trị trong Hiệu năng & Hoạt họa (hiện là {{value}}).",
     "themePresets": "Chủ đề mẫu",
     "themePresetsDefault": "Mặc định",
     "openThemePark": "Mở Theme Park",
@@ -3591,6 +3621,29 @@ export default {
       "qqPrivatePlaylists": {
         "title": "Danh sách phát QQ Music riêng tư",
         "description": "Sau khi đăng nhập, danh sách phát riêng tư của bạn nay có thể tải bài hát với phân trang thực tế. Máy chủ tự lưu trữ cần chạy qq-music-api 3.1.2 trở lên; phiên bản cũ hơn sẽ tự động quay về cơ chế dự phòng, và danh sách phát không đọc được sẽ báo rõ là danh sách không công khai thay vì hiển thị trống."
+      }
+    },
+    "v0_7_25": {
+      "intro": "Chào mừng bạn đến với 0.7.25, Rainy Update SP1—bản sửa lỗi nhanh cho 0.7.24, khắc phục vấn đề hiệu năng của kiểu lời bài hát Nebbia: chuyển sang kiểu này không còn bị khựng, và khi phát thì tốc độ khung hình cao hơn, tải nhẹ hơn. Chuyển nguồn chủ đề trên trang điều khiển về Mặc định giờ cũng thực sự khôi phục chủ đề mặc định. Phần còn lại vẫn là nội dung của Rainy Update: hai kiểu lời bài hát về đêm mưa—Nebbia, viết lời bài hát lên ô cửa kính xe buýt phủ hơi nước, và Machi, một thị trấn thu nhỏ 3D; phụ đề phía dưới xếp thành một đến ba dòng; và cửa sổ điều khiển từ xa trên bản máy tính có thể mở rộng để hiện hàng đợi phát.",
+      "nebbia": {
+        "title": "Nebbia",
+        "description": "Kiểu lời bài hát mới Nebbia: trên chuyến xe buýt đêm mưa, một đầu ngón tay viết lời bài hát lên ô cửa kính phủ hơi nước. Chữ Hán được viết từng nét theo đúng thứ tự nét, mỗi nét lau sạch hơi nước để lộ thành phố bên ngoài; giọt nước đọng dọc theo nét rồi chảy xuống, hơi nước từ từ phủ lại, và hai luồng đèn rọi từ ngoài phố đi theo chữ đang được hát. Lời có thể viết tay, hiện dần, hoặc viết sau khi hà hơi lên kính, rồi biến mất bằng cách mờ hơi nước trở lại hoặc bị ngón tay lau đi; sau dòng cuối, tên bài hát và nghệ sĩ được viết lên kính. Ở chế độ nhịp thông minh, Mưa bụi xe nhẹ khiến giọt mưa đập vào kính theo giọng hát và xe xóc theo trống kick."
+      },
+      "machi": {
+        "title": "Machi",
+        "description": "Kiểu lời bài hát 3D mới Machi: những sa bàn thu nhỏ của một thị trấn Nhật Bản, nơi các biển hiệu mang lời bài hát—dòng hiện tại sáng lên từng từ trên màn hình LED, dòng tiếp theo chạy trên dải chữ LED, tên bài hát nằm trên biển cửa hàng, còn màu sắc và biểu tượng của chủ đề sơn lại cửa hàng chuỗi. Có các cảnh cửa hàng tiện lợi, trạm xăng và quán bar trong thành trại; thời gian (ban ngày, hoàng hôn, ban đêm) và thời tiết (quang đãng, mưa, tuyết, sương mù) đều có thể để Tự động. Khi mưa, mặt đường ướt bóng với bóng phản chiếu kéo dài, và sấm rền ở đầu mỗi đoạn điệp khúc. Kéo để xoay góc nhìn và lưu một góc nhìn riêng cho từng cảnh; máy quay trôi chậm, còn khẩu độ, lấy nét và tilt-shift có thể chỉnh ngay trên thanh khung hình ở trang phát. Ở chế độ nhịp thông minh, neon bừng lên từng đợt theo nhịp, tiếng kick lan gợn sóng trên mặt đất ướt, và màn hình lời bài hát sáng dần theo tiếng snare."
+      },
+      "subtitleRows": {
+        "title": "Bố cục dòng phụ đề",
+        "description": "Phụ đề phía dưới có thể có một, hai hoặc ba dòng: một dòng hiện dòng hiện tại, bản dịch hoặc phiên âm La-tinh; khi nhiều dòng, dòng đầu là dòng hiện tại và mỗi dòng sau có thể hiện dòng tiếp theo, bản dịch hoặc phiên âm La-tinh. Chỉnh trong phần cài đặt phụ đề của cửa sổ kiểu lời bài hát—không còn đi theo Nội dung phụ đề, và cài đặt cũ tự chuyển sang bố cục tương ứng. Trong khoảng nghỉ giữa hai câu, phụ đề dừng ở câu vừa hát xong. Thẻ bài hát mở rộng của Lattice giờ cũng hiện phụ đề bè."
+      },
+      "remoteQueue": {
+        "title": "Hàng đợi trong cửa sổ điều khiển từ xa",
+        "description": "Cửa sổ điều khiển từ xa trên bản máy tính có thêm nút hàng đợi, mở rộng để hiện hàng đợi phát, bài đang phát nằm ở giữa và có thể tìm kiếm; mỗi bài có thể phát ngay, phát tiếp theo, chuyển xuống cuối hoặc xóa. Cửa sổ mở rộng xuống dưới hoặc lên trên tùy chỗ trống còn lại trên màn hình, tự thu lại vài giây sau khi con trỏ rời đi, và Esc xóa ô tìm kiếm trước rồi mới thu lại."
+      },
+      "moreDetails": {
+        "title": "Cải tiến khác",
+        "description": "Hướng dải thông tin của Bravais có thêm Tự động (đảo ngược), chọn hướng ngược lại với Tự động. Thiết bị đầu ra hiện tại giờ cũng áp dụng cho phần phát qua Web Audio, không còn phát ra từ thiết bị mặc định của hệ thống. Khi bài VIP của Qishui chuyển sang phát đoạn nghe thử, thông báo giờ nói rằng trình phát bên thứ ba tạm thời không lấy được bài VIP đầy đủ; khi Spotify không cung cấp âm thanh, thông báo giờ gọi đó là giới hạn chính thức. Di chuột lên dòng cuối của danh sách nền tảng trong cửa sổ đăng nhập không còn làm giao diện trống trơn."
       }
     },
     "v0_7_24": {
