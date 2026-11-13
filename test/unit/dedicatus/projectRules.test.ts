@@ -126,6 +126,27 @@ describe('D513 Folium stable interface', () => {
         const major = checkFoliumApi(files, { readBase: read('{ "major": 1, "minor": 8 }', types), readCurrent: read('{ "major": 2, "minor": 0 }', after) });
         expect(major).toEqual([]);
     });
+
+    it('lets a minor bump rewrite the version line itself', () => {
+        const versionLine = (minor: number) => `export declare const FOLIUM_VERSION: { readonly major: 1; readonly minor: ${minor} };`;
+        const files = parseDiff([
+            'diff --git a/mods/folium.d.ts b/mods/folium.d.ts',
+            '--- a/mods/folium.d.ts',
+            '+++ b/mods/folium.d.ts',
+            '@@ -1,2 +1,3 @@',
+            `-${versionLine(8)}`,
+            `+${versionLine(9)}`,
+            ' export interface FoliumPlayback {',
+            '+    pause(): void;',
+        ].join('\n'));
+        const before = [versionLine(8), 'export interface FoliumPlayback {', '}'].join('\n');
+        const after = [versionLine(9), 'export interface FoliumPlayback {', '    pause(): void;', '}'].join('\n');
+        const read = (minor: number, text: string) => (file: string) => (file === 'mods/folium.d.ts' ? text : `{ "version": { "major": 1, "minor": ${minor} } }`);
+        expect(checkFoliumApi(files, { readBase: read(8, before), readCurrent: read(9, after) })).toEqual([]);
+        // 版本行改了、foliumShared.json 的小版本却没跟上：新增的那一行照报。
+        const stale = checkFoliumApi(files, { readBase: read(8, before), readCurrent: read(8, after) });
+        expect(stale.map(finding => finding.key)).toEqual(['D513:added']);
+    });
 });
 
 describe('D306 startup closure', () => {
@@ -215,18 +236,19 @@ describeWithLintRuntime('dedicatus project rules (ESLint)', async () => {
         invalid: [
             // #619 之前的写法：网络失败也说成下架
             unregistered("const classify = (error) => ({ code: error.offline ? 'taken-down' : 'network' });", 'src/services/onlineMusic/kugou/kugouProvider.ts'),
-            unregistered("const availability = () => ({ state: 'unavailable', reason: 'taken-down' });", 'src/services/onlineMusic/kugou/kugouProvider.ts', 2),
+            // 同一函数同一行 state 和 reason 两个选择器都命中，只报一次（#891 演习）
+            unregistered("const availability = () => ({ state: 'unavailable', reason: 'taken-down' });", 'src/services/onlineMusic/kugou/kugouProvider.ts'),
             // 箭头函数直接返回、先存进变量、成员赋值
-            unregistered("const classify = (offline) => offline ? 'taken-down' : 'network'; const reason = cut ? 'taken-down' : 'auth'; failure.case = 'taken-down';", 'src/services/onlineMusic/kugou/kugouProvider.ts', 3),
+            unregistered("const classify = (offline) => offline ? 'taken-down' : 'network';\nconst reason = cut ? 'taken-down' : 'auth';\nfailure.case = 'taken-down';", 'src/services/onlineMusic/kugou/kugouProvider.ts', 3),
             // 登记的是 playSong：同一个 hook 里别的 useCallback 不放行
             unregistered("function usePlaybackQueueController() { const playSong = useCallback(async () => present({ case: 'taken-down' }), []); const skip = useCallback(() => present({ case: 'taken-down' }), []); }", 'src/components/app/playback/start/usePlaybackQueueController.ts'),
             // #874 的写法：读了一部分就说读完了
             unregistered('async function getUserPlaylists() { return { playlists, whole: true }; }', 'src/services/onlineMusic/qq/qqProvider.ts'),
-            unregistered('window.__iceStats = stats; globalThis.__probe = 1;', 'src/components/visualizer/x.ts', 2),
+            unregistered('window.__iceStats = stats;\nglobalThis.__probe = 1;', 'src/components/visualizer/x.ts', 2),
             // 守卫写反了，或者“开发环境或者某个开关”：正式包里照样会挂
             unregistered('if (!import.meta.env.DEV) { window.__debug = state; }', 'src/services/x.ts'),
             unregistered('if (import.meta.env.DEV || flag) window.__debug = state;', 'src/services/x.ts'),
-            unregistered("Object.assign(window, { __debug: state }); window['__probe'] = 1;", 'src/services/x.ts', 2),
+            unregistered("Object.assign(window, { __debug: state });\nwindow['__probe'] = 1;", 'src/services/x.ts', 2),
         ],
     });
 
@@ -390,10 +412,18 @@ describeWithLintRuntime('dedicatus project rules (ESLint)', async () => {
             { ...jsx, code: "const A = () => <p title={t('a.title')}>{t('a.body')}</p>;" },
             { ...jsx, code: 'const A = () => <span>· 3 / 4 ·</span>;' },
             { ...jsx, code: 'const A = () => <b>Folia</b>;', options: [{ allow: ['Folia'] }] },
+            // #689 演习：地址栏的示例值、带括号的产品名、单位
+            { ...jsx, code: 'const A = () => <><input placeholder="localhost:8765" /><input placeholder="https://example.com/loop.mp4" /><input placeholder="http://127.0.0.1" /></>;' },
+            { ...jsx, code: 'const A = () => <span>OpenSubsonic ({count})</span>;', options: [{ allow: ['OpenSubsonic'] }] },
+            { ...jsx, code: 'const A = () => <div>Now Playing</div>;', options: [{ allow: ['Now Playing', 'Now'] }] },
+            { ...jsx, code: 'const A = () => <span>{gain} dB · {freq} Hz</span>;', options: [{ allow: ['dB', 'Hz'] }] },
         ],
         invalid: [
             { ...jsx, code: 'const A = () => <p>Biography</p>;', errors: [{ messageId: 'literal' }] },
             { ...jsx, code: 'const A = () => <input placeholder="搜索歌曲" />;', errors: [{ messageId: 'literal' }] },
+            // 名字去掉以后还剩要翻译的字；名字只在完整的词上认
+            { ...jsx, code: 'const A = () => <p>Spotify 登录</p>;', errors: [{ messageId: 'literal' }], options: [{ allow: ['Spotify'] }] },
+            { ...jsx, code: 'const A = () => <p>Disclaimer</p>;', errors: [{ messageId: 'literal' }], options: [{ allow: ['Dis'] }] },
         ],
     });
 });
